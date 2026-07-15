@@ -1,7 +1,7 @@
 import axios from "axios";
 
 const api = axios.create({
-    baseURL: "https://fitandflex.runasp.net/api"
+    baseURL: "http://fitandflex.runasp.net/api"
 });
 
 api.interceptors.request.use((config) => {

@@ -93,11 +93,18 @@ export default function Memberships() {
         }
         catch (err) {
 
-            console.log(err);
+    console.log(err);
 
-            alert("Unable to save membership.");
+    if (err.response) {
+        console.log(err.response.data);
+        console.log(err.response.status);
+        alert(JSON.stringify(err.response.data));
+    }
+    else {
+        alert(err.message);
+    }
 
-        }
+}
 
     }
 
