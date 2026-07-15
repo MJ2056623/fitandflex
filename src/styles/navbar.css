@@ -1,0 +1,254 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+/* ===========================
+   NAVBAR
+=========================== */
+
+.navbar{
+
+    height:90px;
+
+    background:white;
+
+    display:flex;
+
+    justify-content:space-between;
+
+    align-items:center;
+
+    padding:0 40px;
+
+    border-bottom:1px solid #E8E8E8;
+
+}
+
+/* ===========================
+   LEFT
+=========================== */
+
+.navbar-left h2{
+
+    font-size:28px;
+
+    font-weight:800;
+
+    color:#081C45;
+
+    margin-bottom:4px;
+
+}
+
+.navbar-left p{
+
+    color:#7A7A7A;
+
+    font-size:14px;
+
+}
+
+/* ===========================
+   RIGHT
+=========================== */
+
+.navbar-right{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:20px;
+
+}
+
+/* ===========================
+   SEARCH
+=========================== */
+
+.search-box{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+    width:340px;
+
+    height:48px;
+
+    padding:0 18px;
+
+    background:#F4F5F7;
+
+    border:1px solid #E2E2E2;
+
+    border-radius:50px;
+
+}
+
+.search-box svg{
+
+    color:#8B8B8B;
+
+    font-size:15px;
+
+}
+
+.search-box input{
+
+    border:none;
+
+    background:transparent;
+
+    width:100%;
+
+    outline:none;
+
+    font-size:14px;
+
+    color:#081C45;
+
+}
+
+.search-box input::placeholder{
+
+    color:#999;
+
+}
+
+/* ===========================
+   NOTIFICATION
+=========================== */
+
+.notification-btn{
+
+    width:46px;
+
+    height:46px;
+
+    border-radius:50%;
+
+    border:none;
+
+    cursor:pointer;
+
+    background:#081C45;
+
+    color:white;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    transition:.25s;
+
+}
+
+.notification-btn:hover{
+
+    background:#0D2C66;
+
+    transform:translateY(-2px);
+
+}
+
+/* ===========================
+   PROFILE
+=========================== */
+
+.profile{
+
+    display:flex;
+
+    align-items:center;
+
+    gap:12px;
+
+}
+
+.avatar{
+
+    width:48px;
+
+    height:48px;
+
+    border-radius:50%;
+
+    background:#B8FF39;
+
+    color:#081C45;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    font-size:18px;
+
+    font-weight:800;
+
+}
+
+.profile h4{
+
+    font-size:15px;
+
+    color:#081C45;
+
+    margin:0;
+
+}
+
+.profile small{
+
+    color:#7A7A7A;
+
+    font-size:12px;
+
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media(max-width:991px){
+
+.navbar{
+
+padding:20px;
+
+height:auto;
+
+flex-direction:column;
+
+align-items:flex-start;
+
+gap:20px;
+
+}
+
+.navbar-right{
+
+width:100%;
+
+flex-wrap:wrap;
+
+}
+
+.search-box{
+
+width:100%;
+
+}
+
+}

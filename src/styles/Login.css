@@ -1,0 +1,307 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Inter',sans-serif;
+}
+
+body{
+
+    margin:0;
+
+    background:#EEF3F8;
+
+}
+
+/* ===========================
+   PAGE
+=========================== */
+
+.login-page{
+
+    width:100%;
+
+    min-height:100vh;
+
+    display:grid;
+
+    grid-template-columns:1fr 500px;
+
+}
+
+/* ===========================
+   LEFT SIDE
+=========================== */
+
+.login-left{
+
+    position:relative;
+
+    background:
+        linear-gradient(rgba(8,28,69,.88),
+        rgba(8,28,69,.90)),
+        url("../assets/gym-bg.jpg");
+
+    background-size:cover;
+
+    background-position:center;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+}
+
+.overlay{
+
+    width:70%;
+
+    color:white;
+
+}
+
+.gym-icon{
+
+    font-size:90px;
+
+    color:#B8FF39;
+
+    margin-bottom:25px;
+
+}
+
+.overlay h1{
+
+    font-size:64px;
+
+    font-weight:800;
+
+    letter-spacing:2px;
+
+    margin-bottom:10px;
+
+}
+
+.overlay h3{
+
+    font-size:28px;
+
+    font-weight:600;
+
+    margin-bottom:25px;
+
+}
+
+.overlay p{
+
+    font-size:18px;
+
+    line-height:32px;
+
+    color:rgba(255,255,255,.85);
+
+}
+
+/* ===========================
+   RIGHT SIDE
+=========================== */
+
+.login-right{
+
+    background:#F8F9FC;
+
+    display:flex;
+
+    justify-content:center;
+
+    align-items:center;
+
+    padding:50px;
+
+}
+
+/* ===========================
+   CARD
+=========================== */
+
+.login-card{
+
+    width:100%;
+
+    max-width:420px;
+
+    background:white;
+
+    border-radius:24px;
+
+    padding:45px;
+
+    box-shadow:0 25px 60px rgba(0,0,0,.08);
+
+}
+
+.login-card h2{
+
+    font-size:34px;
+
+    color:#081C45;
+
+    font-weight:800;
+
+}
+
+.login-card p{
+
+    color:#7A7A7A;
+
+    margin-top:8px;
+
+    margin-bottom:35px;
+
+}
+
+/* ===========================
+   INPUTS
+=========================== */
+
+.input-group-custom{
+
+    height:56px;
+
+    background:#F5F6FA;
+
+    border:1px solid #E3E3E3;
+
+    border-radius:14px;
+
+    display:flex;
+
+    align-items:center;
+
+    padding:0 18px;
+
+    margin-bottom:20px;
+
+    transition:.25s;
+
+}
+
+.input-group-custom:focus-within{
+
+    border-color:#081C45;
+
+    box-shadow:0 0 0 4px rgba(8,28,69,.08);
+
+}
+
+.input-group-custom svg{
+
+    color:#081C45;
+
+    margin-right:15px;
+
+}
+
+.input-group-custom input{
+
+    width:100%;
+
+    border:none;
+
+    background:transparent;
+
+    outline:none;
+
+    font-size:15px;
+
+}
+
+/* ===========================
+   BUTTON
+=========================== */
+
+.login-btn{
+
+    width:100%;
+
+    height:56px;
+
+    border:none;
+
+    border-radius:14px;
+
+    background:#081C45;
+
+    color:white;
+
+    font-size:16px;
+
+    font-weight:700;
+
+    margin-top:10px;
+
+    cursor:pointer;
+
+    transition:.25s;
+
+}
+
+.login-btn:hover{
+
+    background:#B8FF39;
+
+    color:#081C45;
+
+    transform:translateY(-2px);
+
+    box-shadow:0 15px 35px rgba(184,255,57,.35);
+
+}
+
+/* ===========================
+   ALERT
+=========================== */
+
+.alert{
+
+    border-radius:12px;
+
+    margin-bottom:20px;
+
+}
+
+/* ===========================
+   RESPONSIVE
+=========================== */
+
+@media(max-width:992px){
+
+.login-page{
+
+grid-template-columns:1fr;
+
+}
+
+.login-left{
+
+display:none;
+
+}
+
+.login-right{
+
+padding:30px;
+
+}
+
+.login-card{
+
+max-width:100%;
+
+}
+
+}
