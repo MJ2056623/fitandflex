@@ -35,84 +35,110 @@ export default function Payments() {
     }, []);
 
     async function loadData() {
+    try {
 
-        try {
+        const [paymentRes, memberRes, membershipRes, planRes] = await Promise.all([
+            api.get("/Payments"),
+            api.get("/Members"),
+            api.get("/Memberships"),
+            api.get("/MembershipPlans")
+        ]);
 
-            const [paymentRes, memberRes, membershipRes] = await Promise.all([
+        setPayments(paymentRes.data);
+        setMembers(memberRes.data);
 
-                api.get("/Payments"),
-                api.get("/Members"),
-                api.get("/Memberships")
+        // Only active memberships
+        const activeMemberships = membershipRes.data.filter(
+            x => x.status === "Active"
+        );
 
-            ]);
+        setMemberships(activeMemberships);
+        setPlans(planRes.data);
 
-            setPayments(paymentRes.data);
-            setMembers(memberRes.data);
-            setMemberships(membershipRes.data);
-
-        }
-
-        catch (err) {
-
-            console.log(err);
-
-        }
-
+    } catch (err) {
+        console.log(err);
     }
+}
 
     function handleChange(e) {
 
-        setForm({
+    const { name, value } = e.target;
 
-            ...form,
+    // Member selected
+    if (name === "memberID") {
 
-            [e.target.name]: e.target.value
+        const selectedMembership = memberships.find(
+            x => x.memberID === parseInt(value)
+        );
 
-        });
+        if (selectedMembership) {
 
+            const selectedPlan = plans.find(
+                p => p.planID === selectedMembership.planID
+            );
+
+            setForm({
+                ...form,
+                memberID: value,
+                membershipID: selectedMembership.membershipID,
+                amount: selectedPlan ? selectedPlan.price : ""
+            });
+
+        } else {
+
+            setForm({
+                ...form,
+                memberID: value,
+                membershipID: "",
+                amount: ""
+            });
+
+        }
+
+        return;
     }
+
+    setForm({
+        ...form,
+        [name]: value
+    });
+}
 
     async function savePayment(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
+    try {
 
-            const payload = {
+        const payload = {
+            memberID: parseInt(form.memberID),
+            membershipID: parseInt(form.membershipID),
+            amount: parseFloat(form.amount)
+        };
 
-                memberID: Number(form.memberID),
-                membershipID: Number(form.membershipID),
-                amount: Number(form.amount)
+        if (editingId == null) {
 
-            };
+            await api.post("/Payments", payload);
 
-            if (editingId === null) {
+        } else {
 
-                await api.post("/Payments", payload);
-
-            }
-
-            else {
-
-                await api.put(`/Payments/${editingId}`, payload);
-
-            }
-
-            resetForm();
-
-            loadData();
+            await api.put(`/Payments/${editingId}`, payload);
 
         }
 
-        catch (err) {
+        resetForm();
+        loadData();
 
-            console.log(err);
+    } catch (err) {
 
-            alert("Unable to save payment.");
+        console.log(err);
 
-        }
-
+        if (err.response)
+            alert(JSON.stringify(err.response.data));
+        else
+            alert(err.message);
     }
+}
 
     function editPayment(payment) {
 
@@ -151,17 +177,15 @@ export default function Payments() {
 
     function resetForm() {
 
-        setEditingId(null);
+    setEditingId(null);
 
-        setForm({
+    setForm({
+        memberID: "",
+        membershipID: "",
+        amount: ""
+    });
 
-            memberID: "",
-            membershipID: "",
-            amount: ""
-
-        });
-
-    }
+}
 
     const filteredPayments = payments.filter(payment => {
 
@@ -226,33 +250,23 @@ export default function Payments() {
                             </label>
 
                             <select
-                                className="form-select"
-                                name="memberID"
-                                value={form.memberID}
-                                onChange={handleChange}
-                                required
-                            >
+    className="form-select"
+    name="memberID"
+    value={form.memberID}
+    onChange={handleChange}
+    required
+>
+    <option value="">Select Member</option>
 
-                                <option value="">
-
-                                    Select Member
-
-                                </option>
-
-                                {members.map(member => (
-
-                                    <option
-                                        key={member.memberID}
-                                        value={member.memberID}
-                                    >
-
-                                        {member.firstName} {member.lastName}
-
-                                    </option>
-
-                                ))}
-
-                            </select>
+    {memberships.map(membership => (
+        <option
+            key={membership.membershipID}
+            value={membership.memberID}
+        >
+            {membership.member.firstName} {membership.member.lastName}
+        </option>
+    ))}
+</select>
 
                         </div>
 
@@ -265,33 +279,24 @@ export default function Payments() {
                             </label>
 
                             <select
-                                className="form-select"
-                                name="membershipID"
-                                value={form.membershipID}
-                                onChange={handleChange}
-                                required
-                            >
+    className="form-select"
+    name="membershipID"
+    value={form.membershipID}
+    readOnly
+>
+    <option value="">Select Membership</option>
 
-                                <option value="">
-
-                                    Select Membership
-
-                                </option>
-
-                                {memberships.map(item => (
-
-                                    <option
-                                        key={item.membershipID}
-                                        value={item.membershipID}
-                                    >
-
-                                        Membership #{item.membershipID}
-
-                                    </option>
-
-                                ))}
-
-                            </select>
+    {memberships
+        .filter(x => x.memberID === Number(form.memberID))
+        .map(item => (
+            <option
+                key={item.membershipID}
+                value={item.membershipID}
+            >
+                {item.membershipPlan.planName}
+            </option>
+        ))}
+</select>
 
                         </div>
 
@@ -304,14 +309,12 @@ export default function Payments() {
                             </label>
 
                             <input
-                                type="number"
-                                className="form-control"
-                                name="amount"
-                                value={form.amount}
-                                onChange={handleChange}
-                                placeholder="Enter amount"
-                                required
-                            />
+    type="number"
+    className="form-control"
+    name="amount"
+    value={form.amount}
+    readOnly
+/>
 
                         </div>
 
