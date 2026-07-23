@@ -15,15 +15,13 @@ export default function MembershipPlans() {
     const role = localStorage.getItem("role");
 
     const [plans, setPlans] = useState([]);
-
     const [search, setSearch] = useState("");
-
     const [editingId, setEditingId] = useState(null);
 
     const [form, setForm] = useState({
         planName: "",
         durationMonths: "",
-        price: ""
+        price: 0
     });
 
     useEffect(() => {
@@ -39,7 +37,6 @@ export default function MembershipPlans() {
             setPlans(res.data);
 
         }
-
         catch (err) {
 
             console.log(err);
@@ -50,10 +47,47 @@ export default function MembershipPlans() {
 
     function handleChange(e) {
 
-        setForm({
+        const { name, value } = e.target;
+
+        let updated = {
             ...form,
-            [e.target.name]: e.target.value
-        });
+            [name]: value
+        };
+
+        if (name === "planName") {
+
+            if (value === "Walk-in") {
+
+                updated.durationMonths = 0;
+                updated.price = 100;
+
+            }
+            else {
+
+                updated.durationMonths = "";
+                updated.price = 0;
+
+            }
+
+        }
+
+        if (name === "durationMonths") {
+
+            if (updated.planName === "Monthly") {
+
+                updated.price = Number(value) * 3000;
+
+            }
+
+            if (updated.planName === "Yearly") {
+
+                updated.price = Number(value) * 3000;
+
+            }
+
+        }
+
+        setForm(updated);
 
     }
 
@@ -63,23 +97,20 @@ export default function MembershipPlans() {
 
         try {
 
+            const payload = {
+                planName: form.planName,
+                durationMonths: Number(form.durationMonths),
+                price: Number(form.price)
+            };
+
             if (editingId === null) {
 
-                await api.post("/MembershipPlans", {
-                    planName: form.planName,
-                    durationMonths: Number(form.durationMonths),
-                    price: Number(form.price)
-                });
+                await api.post("/MembershipPlans", payload);
 
             }
-
             else {
 
-                await api.put(`/MembershipPlans/${editingId}`, {
-                    planName: form.planName,
-                    durationMonths: Number(form.durationMonths),
-                    price: Number(form.price)
-                });
+                await api.put(`/MembershipPlans/${editingId}`, payload);
 
             }
 
@@ -88,7 +119,6 @@ export default function MembershipPlans() {
             loadPlans();
 
         }
-
         catch (err) {
 
             console.log(err);
@@ -123,12 +153,9 @@ export default function MembershipPlans() {
             loadPlans();
 
         }
+        catch {
 
-        catch (err) {
-
-            console.log(err);
-
-            alert("Unable to delete.");
+            alert("Unable to delete membership plan.");
 
         }
 
@@ -141,292 +168,359 @@ export default function MembershipPlans() {
         setForm({
             planName: "",
             durationMonths: "",
-            price: ""
+            price: 0
         });
 
     }
 
     const filteredPlans = plans.filter(plan =>
-
-        plan.planName
-            .toLowerCase()
-            .includes(search.toLowerCase())
-
+        plan.planName.toLowerCase().includes(search.toLowerCase())
     );
 
     return (
+
         <DashboardLayout>
 
-        <div className="page-container">
+            <div className="page-container">
 
-            <div className="page-header">
+                <div className="page-header">
 
-                <div>
+                    <div>
 
-                    <h1 className="page-title">
+                        <h1 className="page-title">
 
-                        <FaClipboardList className="me-2" />
-
-                        Membership Plans
-
-                    </h1>
-
-                    <p className="page-subtitle">
-                        Manage gym membership plans.
-                    </p>
-
-                </div>
-
-            </div>
-
-            <div className="card shadow-sm border-0 mb-4">
-
-                <div className="card-body">
-
-                    <form onSubmit={savePlan}>
-
-                        <div className="row">
-
-                            <div className="col-md-4 mb-3">
-
-                                <label className="form-label">
-
-                                    Plan Name
-
-                                </label>
-
-                                <input
-                                    className="form-control"
-                                    name="planName"
-                                    value={form.planName}
-                                    onChange={handleChange}
-                                    placeholder="Monthly Membership"
-                                    required
-                                />
-
-                            </div>
-
-                            <div className="col-md-4 mb-3">
-
-                                <label className="form-label">
-
-                                    Duration (Months)
-
-                                </label>
-
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    name="durationMonths"
-                                    value={form.durationMonths}
-                                    onChange={handleChange}
-                                    required
-                                />
-
-                            </div>
-
-                            <div className="col-md-4 mb-3">
-
-                                <label className="form-label">
-
-                                    Price
-
-                                </label>
-
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    name="price"
-                                    value={form.price}
-                                    onChange={handleChange}
-                                    required
-                                />
-
-                            </div>
-
-                        </div>
-
-                        <div className="d-flex gap-2">
-
-                            <button
-                                className="btn btn-dark"
-                            >
-
-                                <FaPlus className="me-2" />
-
-                                {editingId === null
-                                    ? "Add Plan"
-                                    : "Update Plan"}
-
-                            </button>
-
-                            {editingId !== null && (
-
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={resetForm}
-                                >
-
-                                    Cancel
-
-                                </button>
-
-                            )}
-
-                        </div>
-
-                    </form>
-
-                </div>
-
-            </div>
-
-            <div className="card shadow-sm border-0">
-
-                <div className="card-header bg-white">
-
-                    <div className="d-flex justify-content-between align-items-center">
-
-                        <h5 className="mb-0">
+                            <FaClipboardList className="me-2"/>
 
                             Membership Plans
 
-                        </h5>
+                        </h1>
 
-                        <div className="search-box">
+                        <p className="page-subtitle">
 
-                            <FaSearch className="search-icon" />
+                            Manage gym membership plans.
 
-                            <input
-                                className="form-control"
-                                placeholder="Search plan..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-
-                        </div>
+                        </p>
 
                     </div>
 
                 </div>
 
-                <div className="table-responsive">
+                <div className="card shadow-sm border-0 mb-4">
 
-                    <table className="table table-hover align-middle mb-0">
+                    <div className="card-body">
 
-                        <thead className="table-light">
+                        <form onSubmit={savePlan}>
 
-                            <tr>
+                            <div className="row">
 
-                                <th>ID</th>
+                                <div className="col-md-4 mb-3">
 
-                                <th>Plan Name</th>
+                                    <label className="form-label">
 
-                                <th>Duration</th>
+                                        Membership Type
 
-                                <th>Price</th>
+                                    </label>
 
-                                <th width="150">
+                                    <select
+                                        className="form-select"
+                                        name="planName"
+                                        value={form.planName}
+                                        onChange={handleChange}
+                                        required
+                                    >
 
-                                    Actions
+                                        <option value="">
+                                            Select Membership
+                                        </option>
 
-                                </th>
+                                        <option value="Monthly">
+                                            Monthly
+                                        </option>
 
-                            </tr>
+                                        <option value="Yearly">
+                                            Yearly
+                                        </option>
 
-                        </thead>
+                                        <option value="Walk-in">
+                                            Walk-in
+                                        </option>
 
-                        <tbody>
+                                    </select>
 
-                            {filteredPlans.length === 0 ? (
+                                </div>
+
+                                <div className="col-md-4 mb-3">
+
+                                    <label className="form-label">
+
+                                        Duration
+
+                                    </label>
+
+                                    <select
+                                        className="form-select"
+                                        name="durationMonths"
+                                        value={form.durationMonths}
+                                        onChange={handleChange}
+                                        disabled={form.planName === "Walk-in"}
+                                        required={form.planName !== "Walk-in"}
+                                    >
+
+                                        <option value="">
+                                            Select Duration
+                                        </option>
+
+                                        {form.planName === "Monthly" &&
+
+                                            [6,7,8,9,10].map(month => (
+
+                                                <option
+                                                    key={month}
+                                                    value={month}
+                                                >
+
+                                                    {month} Months
+
+                                                </option>
+
+                                            ))
+
+                                        }
+
+                                        {form.planName === "Yearly" &&
+
+                                            Array.from({length:13},(_,i)=>i+12)
+                                            .map(month => (
+
+                                                <option
+                                                    key={month}
+                                                    value={month}
+                                                >
+
+                                                    {month} Months
+
+                                                </option>
+
+                                            ))
+
+                                        }
+
+                                        {form.planName === "Walk-in" &&
+
+                                            <option value="0">
+
+                                                Walk-in
+
+                                            </option>
+
+                                        }
+
+                                    </select>
+
+                                </div>
+
+                                <div className="col-md-4 mb-3">
+
+                                    <label className="form-label">
+
+                                        Price
+
+                                    </label>
+
+                                    <input
+                                        className="form-control"
+                                        value={`₱${Number(form.price).toLocaleString()}`}
+                                        readOnly
+                                    />
+
+                                </div>
+
+                            </div>
+
+                            <div className="d-flex gap-2">
+
+                                <button
+                                    className="btn btn-dark"
+                                >
+
+                                    <FaPlus className="me-2"/>
+
+                                    {editingId===null
+                                        ? "Add Plan"
+                                        : "Update Plan"}
+
+                                </button>
+
+                                {editingId!==null &&
+
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={resetForm}
+                                    >
+
+                                        Cancel
+
+                                    </button>
+
+                                }
+
+                            </div>
+
+                        </form>
+
+                    </div>
+
+                </div>
+
+                <div className="card shadow-sm border-0">
+
+                    <div className="card-header bg-white">
+
+                        <div className="d-flex justify-content-between align-items-center">
+
+                            <h5 className="mb-0">
+
+                                Membership Plans
+
+                            </h5>
+
+                            <div className="search-box">
+
+                                <FaSearch className="search-icon"/>
+
+                                <input
+                                    className="form-control"
+                                    placeholder="Search..."
+                                    value={search}
+                                    onChange={(e)=>setSearch(e.target.value)}
+                                />
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+                    <div className="table-responsive">
+
+                        <table className="table table-hover align-middle mb-0">
+
+                            <thead className="table-light">
 
                                 <tr>
 
-                                    <td
-                                        colSpan="5"
-                                        className="text-center py-5"
-                                    >
+                                    <th>ID</th>
 
-                                        No membership plans found.
+                                    <th>Membership Type</th>
 
-                                    </td>
+                                    <th>Duration</th>
+
+                                    <th>Price</th>
+
+                                    <th width="150">
+
+                                        Actions
+
+                                    </th>
 
                                 </tr>
 
-                            ) : (
+                            </thead>
 
-                                filteredPlans.map(plan => (
+                            <tbody>
 
-                                    <tr key={plan.planID}>
+                                {filteredPlans.length===0 ? (
 
-                                        <td>
+                                    <tr>
 
-                                            #{plan.planID}
+                                        <td
+                                            colSpan="5"
+                                            className="text-center py-5"
+                                        >
 
-                                        </td>
-
-                                        <td>
-
-                                            {plan.planName}
-
-                                        </td>
-
-                                        <td>
-
-                                            {plan.durationMonths} Month(s)
-
-                                        </td>
-
-                                        <td>
-
-                                            ₱{Number(plan.price).toLocaleString()}
-
-                                        </td>
-
-                                        <td>
-
-                                            <button
-                                                className="btn btn-warning btn-sm me-2"
-                                                onClick={() => editPlan(plan)}
-                                            >
-
-                                                <FaEdit />
-
-                                            </button>
-                                                                                        {role === "Admin" && (
-
-                                                <button
-                                                    className="btn btn-danger btn-sm"
-                                                    onClick={() => deletePlan(plan.planID)}
-                                                >
-
-                                                    <FaTrash />
-
-                                                </button>
-
-                                            )}
+                                            No plans found.
 
                                         </td>
 
                                     </tr>
 
-                                ))
+                                ) : (
 
-                            )}
+                                    filteredPlans.map(plan=>(
 
-                        </tbody>
+                                        <tr key={plan.planID}>
 
-                    </table>
+                                            <td>
+
+                                                #{plan.planID}
+
+                                            </td>
+
+                                            <td>
+
+                                                {plan.planName}
+
+                                            </td>
+
+                                            <td>
+
+                                                {plan.planName==="Walk-in"
+                                                    ? "Walk-in"
+                                                    : `${plan.durationMonths} Month(s)`}
+
+                                            </td>
+
+                                            <td>
+
+                                                ₱{Number(plan.price).toLocaleString()}
+
+                                            </td>
+
+                                            <td>
+
+                                                <button
+                                                    className="btn btn-warning btn-sm me-2"
+                                                    onClick={()=>editPlan(plan)}
+                                                >
+
+                                                    <FaEdit/>
+
+                                                </button>
+
+                                                {role==="Admin" &&
+
+                                                    <button
+                                                        className="btn btn-danger btn-sm"
+                                                        onClick={()=>deletePlan(plan.planID)}
+                                                    >
+
+                                                        <FaTrash/>
+
+                                                    </button>
+
+                                                }
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))
+
+                                )}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
 
                 </div>
 
             </div>
 
-        </div>
+        </DashboardLayout>
 
-    </DashboardLayout>
-
-);
+    );
 
 }
