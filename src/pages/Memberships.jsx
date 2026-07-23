@@ -12,9 +12,12 @@ export default function Memberships() {
     const [editingId, setEditingId] = useState(null);
 
     const [form, setForm] = useState({
-        memberID: "",
-        planID: ""
-    });
+    memberID: "",
+    planID: "",
+    startDate: null,
+    endDate: null,
+    status: "Active"
+});
 
     useEffect(() => {
         loadData();
@@ -44,43 +47,63 @@ export default function Memberships() {
     }
 
     async function saveMembership(e) {
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
-            if (editingId === null) {
-                await api.post("/Memberships", {
-                    memberID: Number(form.memberID),
-                    planID: Number(form.planID)
-                });
-            } else {
-                await api.put(`/Memberships/${editingId}`, {
-                    memberID: Number(form.memberID),
-                    planID: Number(form.planID)
-                });
-            }
+    try {
 
-            resetForm();
-            loadData();
-        } catch (err) {
-            console.log(err);
+        if (editingId === null) {
 
-            if (err.response) {
-                console.log(err.response.data);
-                alert(JSON.stringify(err.response.data));
-            } else {
-                alert(err.message);
-            }
+            const payload = {
+                memberID: parseInt(form.memberID),
+                planID: parseInt(form.planID)
+            };
+
+            console.log("POST Payload:", payload);
+
+            await api.post("/Memberships", payload);
+
+        } else {
+
+            const payload = {
+                memberID: parseInt(form.memberID),
+                planID: parseInt(form.planID),
+                startDate: form.startDate || null,
+                endDate: form.endDate || null,
+                status: form.status
+            };
+
+            console.log("PUT Payload:", payload);
+
+            await api.put(`/Memberships/${editingId}`, payload);
+        }
+
+        resetForm();
+        loadData();
+
+    } catch (err) {
+        console.log(err);
+
+        if (err.response) {
+            console.log(err.response.data);
+            alert(JSON.stringify(err.response.data));
+        } else {
+            alert(err.message);
         }
     }
+}
 
     function editMembership(item) {
-        setEditingId(item.membershipID);
 
-        setForm({
-            memberID: item.memberID,
-            planID: item.planID
-        });
-    }
+    setEditingId(item.membershipID);
+
+    setForm({
+        memberID: item.memberID,
+        planID: item.planID,
+        startDate: item.startDate,
+        endDate: item.endDate,
+        status: item.status
+    });
+}
 
     async function deleteMembership(id) {
         if (!window.confirm("Delete this membership?")) return;
@@ -105,13 +128,17 @@ export default function Memberships() {
     }
 
     function resetForm() {
-        setEditingId(null);
 
-        setForm({
-            memberID: "",
-            planID: ""
-        });
-    }
+    setEditingId(null);
+
+    setForm({
+        memberID: "",
+        planID: "",
+        startDate: null,
+        endDate: null,
+        status: "Active"
+    });
+}
 
     return (
         <DashboardLayout>
