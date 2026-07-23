@@ -17,9 +17,9 @@ export default function Payments() {
     const [payments, setPayments] = useState([]);
     const [members, setMembers] = useState([]);
     const [memberships, setMemberships] = useState([]);
+    const [plans, setPlans] = useState([]);
 
     const [editingId, setEditingId] = useState(null);
-
     const [search, setSearch] = useState("");
 
     const [form, setForm] = useState({
@@ -29,127 +29,133 @@ export default function Payments() {
     });
 
     useEffect(() => {
-
         loadData();
-
     }, []);
 
     async function loadData() {
-    try {
 
-        const [paymentRes, memberRes, membershipRes, planRes] = await Promise.all([
-            api.get("/Payments"),
-            api.get("/Members"),
-            api.get("/Memberships"),
-            api.get("/MembershipPlans")
-        ]);
+        try {
 
-        setPayments(paymentRes.data);
-        setMembers(memberRes.data);
+            const [
+                paymentRes,
+                memberRes,
+                membershipRes,
+                planRes
+            ] = await Promise.all([
+                api.get("/Payments"),
+                api.get("/Members"),
+                api.get("/Memberships"),
+                api.get("/MembershipPlans")
+            ]);
 
-        // Only active memberships
-        const activeMemberships = membershipRes.data.filter(
-            x => x.status === "Active"
-        );
+            setPayments(paymentRes.data);
+            setMembers(memberRes.data);
 
-        setMemberships(activeMemberships);
-        setPlans(planRes.data);
+            const activeMemberships = membershipRes.data.filter(
+                x => x.status === "Active"
+            );
 
-    } catch (err) {
-        console.log(err);
+            setMemberships(activeMemberships);
+            setPlans(planRes.data);
+
+        }
+        catch (err) {
+            console.log(err);
+        }
+
     }
-}
 
     function handleChange(e) {
 
-    const { name, value } = e.target;
+        const { name, value } = e.target;
 
-    // Member selected
-    if (name === "memberID") {
+        if (name === "memberID") {
 
-        const selectedMembership = memberships.find(
-            x => x.memberID === parseInt(value)
-        );
+            const membership = memberships.find(
+                m => m.memberID === Number(value)
+            );
 
-        if (selectedMembership) {
+            if (!membership) {
 
-            const selectedPlan = plans.find(
-                p => p.planID === selectedMembership.planID
+                setForm({
+                    ...form,
+                    memberID: value,
+                    membershipID: "",
+                    amount: ""
+                });
+
+                return;
+            }
+
+            const plan = plans.find(
+                p => p.planID === membership.planID
             );
 
             setForm({
                 ...form,
                 memberID: value,
-                membershipID: selectedMembership.membershipID,
-                amount: selectedPlan ? selectedPlan.price : ""
+                membershipID: membership.membershipID,
+                amount: plan ? plan.price : ""
             });
 
-        } else {
-
-            setForm({
-                ...form,
-                memberID: value,
-                membershipID: "",
-                amount: ""
-            });
-
+            return;
         }
 
-        return;
-    }
+        setForm({
+            ...form,
+            [name]: value
+        });
 
-    setForm({
-        ...form,
-        [name]: value
-    });
-}
+    }
 
     async function savePayment(e) {
 
-    e.preventDefault();
+        e.preventDefault();
 
-    try {
+        try {
 
-        const payload = {
-            memberID: parseInt(form.memberID),
-            membershipID: parseInt(form.membershipID),
-            amount: parseFloat(form.amount)
-        };
+            const payload = {
+                memberID: Number(form.memberID),
+                membershipID: Number(form.membershipID),
+                amount: Number(form.amount)
+            };
 
-        if (editingId == null) {
+            if (editingId === null) {
 
-            await api.post("/Payments", payload);
+                await api.post("/Payments", payload);
 
-        } else {
+            }
+            else {
 
-            await api.put(`/Payments/${editingId}`, payload);
+                await api.put(`/Payments/${editingId}`, payload);
+
+            }
+
+            resetForm();
+            loadData();
+
+        }
+        catch (err) {
+
+            console.log(err);
+
+            if (err.response)
+                alert(JSON.stringify(err.response.data));
+            else
+                alert(err.message);
 
         }
 
-        resetForm();
-        loadData();
-
-    } catch (err) {
-
-        console.log(err);
-
-        if (err.response)
-            alert(JSON.stringify(err.response.data));
-        else
-            alert(err.message);
     }
-}
 
     function editPayment(payment) {
 
         setEditingId(payment.paymentID);
 
         setForm({
-
             memberID: payment.memberID,
             membershipID: payment.membershipID,
             amount: payment.amount
-
         });
 
     }
@@ -162,11 +168,9 @@ export default function Payments() {
         try {
 
             await api.delete(`/Payments/${id}`);
-
             loadData();
 
         }
-
         catch {
 
             alert("Unable to delete payment.");
@@ -177,15 +181,15 @@ export default function Payments() {
 
     function resetForm() {
 
-    setEditingId(null);
+        setEditingId(null);
 
-    setForm({
-        memberID: "",
-        membershipID: "",
-        amount: ""
-    });
+        setForm({
+            memberID: "",
+            membershipID: "",
+            amount: ""
+        });
 
-}
+    }
 
     const filteredPayments = payments.filter(payment => {
 
@@ -201,323 +205,296 @@ export default function Payments() {
 
         return (
 
-        <DashboardLayout>
+    <DashboardLayout>
 
-            <div className="page-header">
+        <div className="page-header">
 
-                <div>
+            <div>
 
-                    <h1>
+                <h1>
+                    <FaMoneyBillWave className="me-2" />
+                    Payments
+                </h1>
 
-                        <FaMoneyBillWave className="me-2" />
-
-                        Payments
-
-                    </h1>
-
-                    <p>
-                        Record and manage member payments.
-                    </p>
-
-                </div>
+                <p>
+                    Record and manage member payments.
+                </p>
 
             </div>
 
-            <div className="page-card">
+        </div>
 
-                <div className="card-header-custom">
+        <div className="page-card">
 
-                    <h4>
+            <div className="card-header-custom">
 
-                        {editingId === null
-                            ? "Record Payment"
-                            : "Update Payment"}
-
-                    </h4>
-
-                </div>
-
-                <form onSubmit={savePayment}>
-
-                    <div className="row">
-
-                        <div className="col-md-4 mb-3">
-
-                            <label className="form-label">
-
-                                Member
-
-                            </label>
-
-                            <select
-    className="form-select"
-    name="memberID"
-    value={form.memberID}
-    onChange={handleChange}
-    required
->
-    <option value="">Select Member</option>
-
-    {memberships.map(membership => (
-        <option
-            key={membership.membershipID}
-            value={membership.memberID}
-        >
-            {membership.member.firstName} {membership.member.lastName}
-        </option>
-    ))}
-</select>
-
-                        </div>
-
-                        <div className="col-md-4 mb-3">
-
-                            <label className="form-label">
-
-                                Membership
-
-                            </label>
-
-                            <select
-    className="form-select"
-    name="membershipID"
-    value={form.membershipID}
-    readOnly
->
-    <option value="">Select Membership</option>
-
-    {memberships
-        .filter(x => x.memberID === Number(form.memberID))
-        .map(item => (
-            <option
-                key={item.membershipID}
-                value={item.membershipID}
-            >
-                {item.membershipPlan.planName}
-            </option>
-        ))}
-</select>
-
-                        </div>
-
-                        <div className="col-md-4 mb-3">
-
-                            <label className="form-label">
-
-                                Amount
-
-                            </label>
-
-                            <input
-    type="number"
-    className="form-control"
-    name="amount"
-    value={form.amount}
-    readOnly
-/>
-
-                        </div>
-
-                    </div>
-
-                    <div className="mt-3">
-
-                        <button className="btn-add">
-
-                            <FaPlus className="me-2" />
-
-                            {editingId === null
-                                ? "Record Payment"
-                                : "Update Payment"}
-
-                        </button>
-
-                        {editingId !== null && (
-
-                            <button
-                                type="button"
-                                className="btn-report ms-3"
-                                onClick={resetForm}
-                            >
-
-                                Cancel
-
-                            </button>
-
-                        )}
-
-                    </div>
-
-                </form>
+                <h4>
+                    {editingId === null
+                        ? "Record Payment"
+                        : "Update Payment"}
+                </h4>
 
             </div>
 
-            <div className="page-card mt-4">
+            <form onSubmit={savePayment}>
 
-                <div className="card-header-custom d-flex justify-content-between align-items-center">
+                <div className="row">
 
-                    <h4>
+                    {/* MEMBER */}
 
-                        Payment History
+                    <div className="col-md-4 mb-3">
 
-                    </h4>
+                        <label className="form-label">
+                            Member
+                        </label>
 
-                    <div className="search-box">
+                        <select
+                            className="form-select"
+                            name="memberID"
+                            value={form.memberID}
+                            onChange={handleChange}
+                            required
+                        >
 
-                        <FaSearch className="search-icon" />
+                            <option value="">
+                                Select Member
+                            </option>
+
+                            {memberships.map(membership => (
+
+                                <option
+                                    key={membership.membershipID}
+                                    value={membership.memberID}
+                                >
+
+                                    {membership.member
+                                        ? `${membership.member.firstName} ${membership.member.lastName}`
+                                        : membership.memberID}
+
+                                </option>
+
+                            ))}
+
+                        </select>
+
+                    </div>
+
+                    {/* MEMBERSHIP */}
+
+                    <div className="col-md-4 mb-3">
+
+                        <label className="form-label">
+                            Membership
+                        </label>
 
                         <input
                             type="text"
                             className="form-control"
-                            placeholder="Search member..."
-                            value={search}
-                            onChange={(e) => setSearch(e.target.value)}
+                            value={
+                                memberships.find(
+                                    x => x.membershipID === Number(form.membershipID)
+                                )?.membershipPlan?.planName || ""
+                            }
+                            readOnly
+                        />
+
+                    </div>
+
+                    {/* AMOUNT */}
+
+                    <div className="col-md-4 mb-3">
+
+                        <label className="form-label">
+                            Amount
+                        </label>
+
+                        <input
+                            type="number"
+                            className="form-control"
+                            value={form.amount}
+                            readOnly
                         />
 
                     </div>
 
                 </div>
 
-                <div className="table-responsive">
+                <div className="mt-3">
 
-                    <table className="table custom-table">
+                    <button className="btn-add">
 
-                        <thead>
+                        <FaPlus className="me-2" />
 
-                            <tr>
+                        {editingId === null
+                            ? "Record Payment"
+                            : "Update Payment"}
 
-                                <th>ID</th>
+                    </button>
 
-                                <th>Member</th>
+                    {editingId !== null && (
 
-                                <th>Membership</th>
+                        <button
+                            type="button"
+                            className="btn-report ms-3"
+                            onClick={resetForm}
+                        >
 
-                                <th>Amount</th>
+                            Cancel
 
-                                <th>Date</th>
+                        </button>
 
-                                <th width="170">
+                    )}
 
-                                    Actions
+                </div>
 
-                                </th>
+            </form>
 
-                            </tr>
+        </div>
 
-                        </thead>
+        <div className="page-card mt-4">
 
-                        <tbody>
-                                                        {filteredPayments.length === 0 ? (
+            <div className="card-header-custom d-flex justify-content-between align-items-center">
 
-                                <tr>
+                <h4>
+                    Payment History
+                </h4>
 
-                                    <td
-                                        colSpan="6"
-                                        className="text-center py-5"
-                                    >
+                <div className="search-box">
 
-                                        No payments found.
+                    <FaSearch className="search-icon" />
 
-                                    </td>
-
-                                </tr>
-
-                            ) : (
-
-                                filteredPayments.map(payment => (
-
-                                    <tr key={payment.paymentID}>
-
-                                        <td>
-
-                                            <strong>
-
-                                                #{payment.paymentID}
-
-                                            </strong>
-
-                                        </td>
-
-                                        <td>
-
-                                            {payment.member
-                                                ? `${payment.member.firstName} ${payment.member.lastName}`
-                                                : payment.memberID}
-
-                                        </td>
-
-                                        <td>
-
-                                            #{payment.membershipID}
-
-                                        </td>
-
-                                        <td>
-
-                                            <strong>
-
-                                                ₱{Number(payment.amount).toLocaleString()}
-
-                                            </strong>
-
-                                        </td>
-
-                                        <td>
-
-                                            {new Date(
-                                                payment.paymentDate
-                                            ).toLocaleDateString()}
-
-                                        </td>
-
-                                        <td>
-
-                                            <button
-                                                className="btn btn-warning btn-sm me-2"
-                                                onClick={() =>
-                                                    editPayment(payment)
-                                                }
-                                            >
-
-                                                <FaEdit />
-
-                                            </button>
-
-                                            {role === "Admin" && (
-
-                                                <button
-                                                    className="btn btn-danger btn-sm"
-                                                    onClick={() =>
-                                                        deletePayment(
-                                                            payment.paymentID
-                                                        )
-                                                    }
-                                                >
-
-                                                    <FaTrash />
-
-                                                </button>
-
-                                            )}
-
-                                        </td>
-
-                                    </tr>
-
-                                ))
-
-                            )}
-
-                        </tbody>
-
-                    </table>
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Search member..."
+                        value={search}
+                        onChange={(e) => setSearch(e.target.value)}
+                    />
 
                 </div>
 
             </div>
 
-        </DashboardLayout>
+            <div className="table-responsive">
 
-    );
+                <table className="table custom-table">
+
+                    <thead>
+
+                        <tr>
+
+                            <th>ID</th>
+                            <th>Member</th>
+                            <th>Membership</th>
+                            <th>Amount</th>
+                            <th>Date</th>
+                            <th width="170">Actions</th>
+
+                        </tr>
+
+                    </thead>
+
+                    <tbody>
+
+                        {filteredPayments.length === 0 ? (
+
+                            <tr>
+
+                                <td
+                                    colSpan="6"
+                                    className="text-center py-5"
+                                >
+
+                                    No payments found.
+
+                                </td>
+
+                            </tr>
+
+                        ) : (
+
+                            filteredPayments.map(payment => (
+
+                                <tr key={payment.paymentID}>
+
+                                    <td>
+                                        <strong>#{payment.paymentID}</strong>
+                                    </td>
+
+                                    <td>
+
+                                        {payment.member
+                                            ? `${payment.member.firstName} ${payment.member.lastName}`
+                                            : payment.memberID}
+
+                                    </td>
+
+                                    <td>
+
+                                        {payment.membership?.membershipPlan?.planName ??
+                                            `#${payment.membershipID}`}
+
+                                    </td>
+
+                                    <td>
+
+                                        <strong>
+                                            ₱{Number(payment.amount).toLocaleString()}
+                                        </strong>
+
+                                    </td>
+
+                                    <td>
+
+                                        {new Date(payment.paymentDate)
+                                            .toLocaleDateString()}
+
+                                    </td>
+
+                                    <td>
+
+                                        <button
+                                            className="btn btn-warning btn-sm me-2"
+                                            onClick={() => editPayment(payment)}
+                                        >
+
+                                            <FaEdit />
+
+                                        </button>
+
+                                        {role === "Admin" && (
+
+                                            <button
+                                                className="btn btn-danger btn-sm"
+                                                onClick={() =>
+                                                    deletePayment(payment.paymentID)
+                                                }
+                                            >
+
+                                                <FaTrash />
+
+                                            </button>
+
+                                        )}
+
+                                    </td>
+
+                                </tr>
+
+                            ))
+
+                        )}
+
+                    </tbody>
+
+                </table>
+
+            </div>
+
+        </div>
+
+    </DashboardLayout>
+
+);
 
 }
