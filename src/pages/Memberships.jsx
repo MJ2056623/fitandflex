@@ -23,12 +23,9 @@ export default function Memberships() {
     const [search, setSearch] = useState("");
 
     const [form, setForm] = useState({
-        memberID: "",
-        planID: "",
-        startDate: "",
-        endDate: "",
-        status: "Active"
-    });
+    memberID: "",
+    planID: ""
+});
 
     useEffect(() => {
         loadData();
@@ -71,42 +68,49 @@ export default function Memberships() {
 
     async function saveMembership(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
+    try {
 
-            if (editingId === null) {
+        if (editingId === null) {
 
-                await api.post("/Memberships", form);
-
-            }
-            else {
-
-                await api.put(`/Memberships/${editingId}`, form);
-
-            }
-
-            resetForm();
-
-            loadData();
+            await api.post("/Memberships", {
+                memberID: Number(form.memberID),
+                planID: Number(form.planID)
+            });
 
         }
-        catch (err) {
+        else {
 
-    console.log(err);
+            await api.put(`/Memberships/${editingId}`, {
+                memberID: Number(form.memberID),
+                planID: Number(form.planID),
+                startDate: form.startDate,
+                endDate: form.endDate,
+                status: form.status
+            });
 
-    if (err.response) {
-        console.log(err.response.data);
-        console.log(err.response.status);
-        alert(JSON.stringify(err.response.data));
+        }
+
+        resetForm();
+        loadData();
+
     }
-    else {
-        alert(err.message);
+    catch (err) {
+
+        console.log(err);
+
+        if (err.response) {
+            console.log(err.response.data);
+            alert(JSON.stringify(err.response.data));
+        }
+        else {
+            alert(err.message);
+        }
+
     }
 
 }
-
-    }
 
     function editMembership(item) {
 
@@ -144,21 +148,35 @@ export default function Memberships() {
 
     }
 
-    function resetForm(){
+    async function renewMembership(id) {
 
-        setEditingId(null);
+    try {
 
-        setForm({
+        await api.put(`/Memberships/renew/${id}`);
 
-            memberID:"",
-            planID:"",
-            startDate:"",
-            endDate:"",
-            status:"Active"
-
-        });
+        loadData();
 
     }
+    catch (err) {
+
+        console.log(err);
+
+        alert("Unable to renew membership.");
+
+    }
+
+}
+
+    function resetForm() {
+
+    setEditingId(null);
+
+    setForm({
+        memberID: "",
+        planID: ""
+    });
+
+}
 
     const filteredMemberships = memberships.filter(x=>{
 

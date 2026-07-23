@@ -272,7 +272,7 @@ export default function MembershipPlans() {
 
                                         {form.planName === "Monthly" &&
 
-                                            [6,7,8,9,10].map(month => (
+                                            [1,2,3,4,5,6,7,8,9,10].map(month => (
 
                                                 <option
                                                     key={month}
