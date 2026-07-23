@@ -52,6 +52,8 @@ export default function Payments() {
         setMembers(memberRes.data);
 
         // Only memberships that are ACTIVE and NOT yet paid
+        console.log("Memberships:", membershipRes.data);
+        console.log("Available:", availableMemberships);
         const availableMemberships = membershipRes.data.filter(
             membership =>
                 membership.status === "Active" &&
