@@ -34,36 +34,42 @@ export default function Payments() {
 
     async function loadData() {
 
-        try {
+    try {
 
-            const [
-                paymentRes,
-                memberRes,
-                membershipRes,
-                planRes
-            ] = await Promise.all([
-                api.get("/Payments"),
-                api.get("/Members"),
-                api.get("/Memberships"),
-                api.get("/MembershipPlans")
-            ]);
+        const [
+            paymentRes,
+            memberRes,
+            membershipRes,
+            planRes
+        ] = await Promise.all([
+            api.get("/Payments"),
+            api.get("/Members"),
+            api.get("/Memberships"),
+            api.get("/MembershipPlans")
+        ]);
 
-            setPayments(paymentRes.data);
-            setMembers(memberRes.data);
+        setPayments(paymentRes.data);
+        setMembers(memberRes.data);
 
-            const activeMemberships = membershipRes.data.filter(
-                x => x.status === "Active"
-            );
+        // Only memberships that are ACTIVE and NOT yet paid
+        const availableMemberships = membershipRes.data.filter(
+            membership =>
+                membership.status === "Active" &&
+                membership.isPaid === false
+        );
 
-            setMemberships(activeMemberships);
-            setPlans(planRes.data);
+        setMemberships(availableMemberships);
 
-        }
-        catch (err) {
-            console.log(err);
-        }
+        setPlans(planRes.data);
 
     }
+    catch (err) {
+
+        console.log(err);
+
+    }
+
+}
 
     function handleChange(e) {
 
@@ -110,43 +116,52 @@ export default function Payments() {
 
     async function savePayment(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
+    try {
 
-            const payload = {
-                memberID: Number(form.memberID),
-                membershipID: Number(form.membershipID),
-                amount: Number(form.amount)
-            };
+        const payload = {
+            memberID: Number(form.memberID),
+            membershipID: Number(form.membershipID),
+            amount: Number(form.amount)
+        };
 
-            if (editingId === null) {
+        if (editingId === null) {
 
-                await api.post("/Payments", payload);
+            // Record new payment
+            await api.post("/Payments", payload);
 
-            }
-            else {
+        } else {
 
-                await api.put(`/Payments/${editingId}`, payload);
-
-            }
-
-            resetForm();
-            loadData();
+            // Update existing payment
+            await api.put(`/Payments/${editingId}`, payload);
 
         }
-        catch (err) {
 
-            console.log(err);
+        // Clear form
+        resetForm();
 
-            if (err.response)
-                alert(JSON.stringify(err.response.data));
-            else
-                alert(err.message);
+        // Reload all data.
+        // If backend sets IsPaid = true,
+        // the member will automatically disappear
+        // from the Member dropdown.
+        await loadData();
 
+    }
+    catch (err) {
+
+        console.log(err);
+
+        if (err.response) {
+            alert(JSON.stringify(err.response.data));
+        }
+        else {
+            alert(err.message);
         }
 
     }
+
+}
 
     function editPayment(payment) {
 
@@ -181,15 +196,15 @@ export default function Payments() {
 
     function resetForm() {
 
-        setEditingId(null);
+    setEditingId(null);
 
-        setForm({
-            memberID: "",
-            membershipID: "",
-            amount: ""
-        });
+    setForm({
+        memberID: "",
+        membershipID: "",
+        amount: ""
+    });
 
-    }
+}
 
     const filteredPayments = payments.filter(payment => {
 
