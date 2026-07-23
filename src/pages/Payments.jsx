@@ -33,7 +33,6 @@ export default function Payments() {
     }, []);
 
     async function loadData() {
-
     try {
 
         const [
@@ -50,26 +49,21 @@ export default function Payments() {
 
         setPayments(paymentRes.data);
         setMembers(memberRes.data);
+        setPlans(planRes.data);
 
-        // Only memberships that are ACTIVE and NOT yet paid
-        console.log("Memberships:", membershipRes.data);
-        console.log("Available:", availableMemberships);
         const availableMemberships = membershipRes.data.filter(
-            membership =>
-                membership.status === "Active" &&
-                membership.isPaid === false
+            m => m.status === "Active" && !m.isPaid
         );
+
+        console.log(availableMemberships);
 
         setMemberships(availableMemberships);
 
-        setPlans(planRes.data);
-
     }
     catch (err) {
-
         console.log(err);
-
     }
+
 
 }
 
