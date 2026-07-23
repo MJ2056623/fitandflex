@@ -2,16 +2,7 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import api from "../api/api";
 
-import {
-    FaPlus,
-    FaEdit,
-    FaTrash,
-    FaSearch,
-    FaCalendarCheck
-} from "react-icons/fa";
-
 export default function Memberships() {
-
     const role = localStorage.getItem("role");
 
     const [memberships, setMemberships] = useState([]);
@@ -20,21 +11,17 @@ export default function Memberships() {
 
     const [editingId, setEditingId] = useState(null);
 
-    const [search, setSearch] = useState("");
-
     const [form, setForm] = useState({
-    memberID: "",
-    planID: ""
-});
+        memberID: "",
+        planID: ""
+    });
 
     useEffect(() => {
         loadData();
     }, []);
 
     async function loadData() {
-
         try {
-
             const [membershipRes, memberRes, planRes] = await Promise.all([
                 api.get("/Memberships"),
                 api.get("/Members"),
@@ -44,192 +31,111 @@ export default function Memberships() {
             setMemberships(membershipRes.data);
             setMembers(memberRes.data);
             setPlans(planRes.data);
-
-        }
-        catch (err) {
-
+        } catch (err) {
             console.log(err);
-
         }
-
     }
 
     function handleChange(e) {
-
         setForm({
-
             ...form,
-
             [e.target.name]: e.target.value
-
         });
-
     }
 
     async function saveMembership(e) {
+        e.preventDefault();
 
-    e.preventDefault();
+        try {
+            if (editingId === null) {
+                await api.post("/Memberships", {
+                    memberID: Number(form.memberID),
+                    planID: Number(form.planID)
+                });
+            } else {
+                await api.put(`/Memberships/${editingId}`, {
+                    memberID: Number(form.memberID),
+                    planID: Number(form.planID)
+                });
+            }
 
-    try {
+            resetForm();
+            loadData();
+        } catch (err) {
+            console.log(err);
 
-        if (editingId === null) {
-
-            await api.post("/Memberships", {
-                memberID: Number(form.memberID),
-                planID: Number(form.planID)
-            });
-
+            if (err.response) {
+                console.log(err.response.data);
+                alert(JSON.stringify(err.response.data));
+            } else {
+                alert(err.message);
+            }
         }
-        else {
-
-            await api.put(`/Memberships/${editingId}`, {
-                memberID: Number(form.memberID),
-                planID: Number(form.planID),
-                startDate: form.startDate,
-                endDate: form.endDate,
-                status: form.status
-            });
-
-        }
-
-        resetForm();
-        loadData();
-
     }
-    catch (err) {
-
-        console.log(err);
-
-        if (err.response) {
-            console.log(err.response.data);
-            alert(JSON.stringify(err.response.data));
-        }
-        else {
-            alert(err.message);
-        }
-
-    }
-
-}
 
     function editMembership(item) {
-
         setEditingId(item.membershipID);
 
         setForm({
-
             memberID: item.memberID,
-            planID: item.planID,
-            startDate: item.startDate.substring(0,10),
-            endDate: item.endDate.substring(0,10),
-            status: item.status
-
+            planID: item.planID
         });
-
     }
 
     async function deleteMembership(id) {
+        if (!window.confirm("Delete this membership?")) return;
 
-        if(!window.confirm("Delete this membership?"))
-            return;
-
-        try{
-
+        try {
             await api.delete(`/Memberships/${id}`);
-
             loadData();
-
-        }
-        catch{
-
+        } catch (err) {
+            console.log(err);
             alert("Unable to delete membership.");
-
         }
-
     }
 
     async function renewMembership(id) {
-
-    try {
-
-        await api.put(`/Memberships/renew/${id}`);
-
-        loadData();
-
+        try {
+            await api.put(`/Memberships/renew/${id}`);
+            loadData();
+        } catch (err) {
+            console.log(err);
+            alert("Unable to renew membership.");
+        }
     }
-    catch (err) {
-
-        console.log(err);
-
-        alert("Unable to renew membership.");
-
-    }
-
-}
 
     function resetForm() {
+        setEditingId(null);
 
-    setEditingId(null);
+        setForm({
+            memberID: "",
+            planID: ""
+        });
+    }
 
-    setForm({
-        memberID: "",
-        planID: ""
-    });
-
-}
-
-    const filteredMemberships = memberships.filter(x=>{
-
-        const memberName = x.member
-            ? `${x.member.firstName} ${x.member.lastName}`
-            : "";
-
-        return memberName
-            .toLowerCase()
-            .includes(search.toLowerCase());
-
-    });
-
-            return (
-
+    return (
         <DashboardLayout>
-
             <div className="page-header">
-
                 <div>
-
                     <h1>Memberships</h1>
-
-                    <p>
-                        Manage member subscriptions and renewals.
-                    </p>
-
+                    <p>Manage member subscriptions and renewals.</p>
                 </div>
-
             </div>
 
             <div className="page-card">
-
                 <div className="card-header-custom">
-
                     <h4>
                         {editingId === null
                             ? "Create Membership"
                             : "Update Membership"}
                     </h4>
-
                 </div>
 
                 <form onSubmit={saveMembership}>
-
                     <div className="row">
-
                         <div className="col-md-6 mb-3">
-
                             <label className="form-label">
-
                                 Member
-
                             </label>
 
                             <select
@@ -239,34 +145,24 @@ export default function Memberships() {
                                 onChange={handleChange}
                                 required
                             >
-
                                 <option value="">
                                     Select Member
                                 </option>
 
                                 {members.map(member => (
-
                                     <option
                                         key={member.memberID}
                                         value={member.memberID}
                                     >
-
                                         {member.firstName} {member.lastName}
-
                                     </option>
-
                                 ))}
-
                             </select>
-
                         </div>
 
                         <div className="col-md-6 mb-3">
-
                             <label className="form-label">
-
                                 Membership Plan
-
                             </label>
 
                             <select
@@ -276,151 +172,92 @@ export default function Memberships() {
                                 onChange={handleChange}
                                 required
                             >
-
                                 <option value="">
                                     Select Plan
                                 </option>
 
                                 {plans.map(plan => (
-
                                     <option
                                         key={plan.planID}
                                         value={plan.planID}
                                     >
-
                                         {plan.planName}
-
                                     </option>
-
                                 ))}
-
                             </select>
-
                         </div>
-
                     </div>
 
-                    <div className="mt-3">
+                    <button className="btn-add">
+                        {editingId === null
+                            ? "Create Membership"
+                            : "Update Membership"}
+                    </button>
 
-                        <button className="btn-add">
-
-                            {editingId === null
-                                ? "Create Membership"
-                                : "Update Membership"}
-
+                    {editingId !== null && (
+                        <button
+                            type="button"
+                            className="btn-report ms-3"
+                            onClick={resetForm}
+                        >
+                            Cancel
                         </button>
-
-                        {editingId !== null && (
-
-                            <button
-                                type="button"
-                                className="btn-report ms-3"
-                                onClick={resetForm}
-                            >
-
-                                Cancel
-
-                            </button>
-
-                        )}
-
-                    </div>
-
+                    )}
                 </form>
-
             </div>
 
             <div className="page-card mt-4">
-
                 <div className="card-header-custom">
-
                     <h4>Membership List</h4>
-
                 </div>
 
                 <div className="table-responsive">
-
                     <table className="table custom-table">
-
                         <thead>
-
                             <tr>
-
                                 <th>ID</th>
                                 <th>Member</th>
                                 <th>Plan</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
                                 <th>Status</th>
-                                <th width="230">Actions</th>
-
+                                <th width="220">Actions</th>
                             </tr>
-
                         </thead>
 
                         <tbody>
-
                             {memberships.length === 0 ? (
-
                                 <tr>
-
-                                    <td
-                                        colSpan="7"
-                                        className="text-center py-5"
-                                    >
-
+                                    <td colSpan="7" className="text-center">
                                         No memberships found.
-
                                     </td>
-
                                 </tr>
-
                             ) : (
-
                                 memberships.map(item => (
-
                                     <tr key={item.membershipID}>
+                                        <td>#{item.membershipID}</td>
 
                                         <td>
-
-                                            #{item.membershipID}
-
-                                        </td>
-
-                                        <td>
-
                                             {item.member
                                                 ? `${item.member.firstName} ${item.member.lastName}`
                                                 : item.memberID}
-
                                         </td>
 
                                         <td>
-
                                             {item.membershipPlan
                                                 ? item.membershipPlan.planName
                                                 : item.planID}
-
                                         </td>
 
                                         <td>
-
-                                            {new Date(
-                                                item.startDate
-                                            ).toLocaleDateString()}
-
+                                            {new Date(item.startDate).toLocaleDateString()}
                                         </td>
 
                                         <td>
-
-                                            {new Date(
-                                                item.endDate
-                                            ).toLocaleDateString()}
-
+                                            {new Date(item.endDate).toLocaleDateString()}
                                         </td>
 
                                         <td>
-
                                             <span
                                                 className={
                                                     item.status === "Active"
@@ -428,74 +265,45 @@ export default function Memberships() {
                                                         : "status-expired"
                                                 }
                                             >
-
                                                 {item.status}
-
                                             </span>
-
                                         </td>
 
                                         <td>
-
                                             <button
                                                 className="btn-table-edit me-2"
-                                                onClick={() =>
-                                                    editMembership(item)
-                                                }
+                                                onClick={() => editMembership(item)}
                                             >
-
                                                 Edit
-
                                             </button>
 
                                             <button
                                                 className="btn-table-renew me-2"
                                                 onClick={() =>
-                                                    renewMembership(
-                                                        item.membershipID
-                                                    )
+                                                    renewMembership(item.membershipID)
                                                 }
                                             >
-
                                                 Renew
-
                                             </button>
 
                                             {role === "Admin" && (
-
                                                 <button
                                                     className="btn-table-delete"
                                                     onClick={() =>
-                                                        deleteMembership(
-                                                            item.membershipID
-                                                        )
+                                                        deleteMembership(item.membershipID)
                                                     }
                                                 >
-
                                                     Delete
-
                                                 </button>
-
                                             )}
-
                                         </td>
-
                                     </tr>
-
                                 ))
-
                             )}
-
                         </tbody>
-
                     </table>
-
                 </div>
-
             </div>
-
         </DashboardLayout>
-
     );
-
 }
