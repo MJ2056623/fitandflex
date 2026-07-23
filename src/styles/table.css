@@ -1,0 +1,35 @@
+.btn-table-edit,
+.btn-table-renew,
+.btn-table-delete{
+    width:40px;
+    height:40px;
+    border:none;
+    border-radius:8px;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    cursor:pointer;
+    transition:.2s;
+    font-size:16px;
+}
+
+.btn-table-edit{
+    background:#ffc107;
+    color:#000;
+}
+
+.btn-table-renew{
+    background:#7CFC00;
+    color:#000;
+}
+
+.btn-table-delete{
+    background:#dc3545;
+    color:#fff;
+}
+
+.btn-table-edit:hover,
+.btn-table-renew:hover,
+.btn-table-delete:hover{
+    transform:scale(1.08);
+}

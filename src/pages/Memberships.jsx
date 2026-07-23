@@ -2,6 +2,12 @@ import { useEffect, useState } from "react";
 import DashboardLayout from "../layouts/DashboardLayout";
 import api from "../api/api";
 
+import {
+    FaEdit,
+    FaTrash,
+    FaRedoAlt
+} from "react-icons/fa";
+
 export default function Memberships() {
     const role = localStorage.getItem("role");
 
@@ -118,14 +124,32 @@ export default function Memberships() {
     }
 
     async function renewMembership(id) {
-        try {
-            await api.put(`/Memberships/renew/${id}`);
-            loadData();
-        } catch (err) {
-            console.log(err);
-            alert("Unable to renew membership.");
+
+    if (!window.confirm("Renew this membership?"))
+        return;
+
+    try {
+
+        const response = await api.put(`/Memberships/renew/${id}`);
+
+        console.log(response.data);
+
+        alert("Membership renewed successfully.");
+
+        loadData();
+
+    } catch (err) {
+
+        console.log(err);
+
+        if (err.response) {
+            console.log(err.response.data);
+            alert(JSON.stringify(err.response.data));
+        } else {
+            alert(err.message);
         }
     }
+}
 
     function resetForm() {
 
@@ -296,34 +320,38 @@ export default function Memberships() {
                                             </span>
                                         </td>
 
-                                        <td>
-                                            <button
-                                                className="btn-table-edit me-2"
-                                                onClick={() => editMembership(item)}
-                                            >
-                                                Edit
-                                            </button>
+                                        <td className="d-flex gap-2">
 
-                                            <button
-                                                className="btn-table-renew me-2"
-                                                onClick={() =>
-                                                    renewMembership(item.membershipID)
-                                                }
-                                            >
-                                                Renew
-                                            </button>
+    <button
+        type="button"
+        className="btn-table-edit"
+        title="Edit"
+        onClick={() => editMembership(item)}
+    >
+        <FaEdit />
+    </button>
 
-                                            {role === "Admin" && (
-                                                <button
-                                                    className="btn-table-delete"
-                                                    onClick={() =>
-                                                        deleteMembership(item.membershipID)
-                                                    }
-                                                >
-                                                    Delete
-                                                </button>
-                                            )}
-                                        </td>
+    <button
+        type="button"
+        className="btn-table-renew"
+        title="Renew"
+        onClick={() => renewMembership(item.membershipID)}
+    >
+        <FaRedoAlt />
+    </button>
+
+    {role === "Admin" && (
+        <button
+            type="button"
+            className="btn-table-delete"
+            title="Delete"
+            onClick={() => deleteMembership(item.membershipID)}
+        >
+            <FaTrash />
+        </button>
+    )}
+
+</td>
                                     </tr>
                                 ))
                             )}
