@@ -87,17 +87,6 @@ export default function Dashboard() {
 
                 </div>
 
-                <button
-                    className="banner-btn"
-                    onClick={() => navigate("/members")}
-                >
-
-                    <FaUserPlus />
-
-                    Add Member
-
-                </button>
-
             </div>
 
             {/* Statistics */}
