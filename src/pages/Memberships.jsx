@@ -38,6 +38,38 @@ export default function Memberships() {
     // FILTER MEMBERSHIPS HERE
     const filteredMemberships = memberships.filter((m) => {
 
+        useEffect(() => {
+    loadData();
+}, []);
+
+async function loadData() {
+    try {
+        const [
+            membershipRes,
+            memberRes,
+            planRes
+        ] = await Promise.all([
+            api.get("/Memberships"),
+            api.get("/Members"),
+            api.get("/MembershipPlans")
+        ]);
+
+        setMemberships(membershipRes.data);
+        setMembers(memberRes.data);
+        setPlans(planRes.data);
+    }
+    catch (err) {
+        console.log(err);
+    }
+}
+
+function handleChange(e) {
+    setForm({
+        ...form,
+        [e.target.name]: e.target.value
+    });
+}
+
         if (!statusFilter) {
             return true;
         }
@@ -85,49 +117,7 @@ export default function Memberships() {
 
         }
 
-useEffect(() => {
-    loadData();
-}, []);
 
-
-async function loadData() {
-
-    try {
-
-        const [
-            membershipRes,
-            memberRes,
-            planRes
-        ] = await Promise.all([
-            api.get("/Memberships"),
-            api.get("/Members"),
-            api.get("/MembershipPlans")
-        ]);
-
-
-        setMemberships(membershipRes.data);
-        setMembers(memberRes.data);
-        setPlans(planRes.data);
-
-
-    } catch(err){
-
-        console.log(err);
-
-    }
-
-}
-
-
-
-function handleChange(e){
-
-    setForm({
-        ...form,
-        [e.target.name]: e.target.value
-    });
-
-}
 
 
     }
