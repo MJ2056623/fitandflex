@@ -10,10 +10,11 @@ import {
 
 export default function Memberships() {
     const role = localStorage.getItem("role");
+    const [searchParams] = useSearchParams();
 
     const [memberships, setMemberships] = useState([]);
-    const [members, setMembers] = useState([]);
-    const [plans, setPlans] = useState([]);
+const [members, setMembers] = useState([]);
+const [plans, setPlans] = useState([]);
 
     const [editingId, setEditingId] = useState(null);
 
@@ -284,7 +285,7 @@ export default function Memberships() {
                                     </td>
                                 </tr>
                             ) : (
-                                memberships.map(item => (
+                                filteredMemberships.map(item => (
                                     <tr key={item.membershipID}>
                                         <td>#{item.membershipID}</td>
 

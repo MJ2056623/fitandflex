@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
+
 import DashboardLayout from "../layouts/DashboardLayout";
 import api from "../api/api";
 

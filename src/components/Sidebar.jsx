@@ -16,6 +16,7 @@ import logo from "../assets/logo.png"; // Put your FIT&FLEX logo here
 export default function Sidebar() {
 
     const navigate = useNavigate();
+    const role = localStorage.getItem("role") || "Staff";
 
     const logout = () => {
 
@@ -74,8 +75,14 @@ export default function Sidebar() {
                 </NavLink>
 
                 {role === "Admin" && (
-    <NavLink to="/plans">
-        Membership Plans
+    <NavLink
+        to="/plans"
+        className={({ isActive }) =>
+            isActive ? "menu-item active-menu" : "menu-item"
+        }
+    >
+        <FaClipboardList />
+        <span>Membership Plans</span>
     </NavLink>
 )}
 
