@@ -170,8 +170,12 @@ export default function Memberships() {
 
     async function renewMembership(id) {
 
-        if (!window.confirm("Renew this membership?"))
-            return;
+        if (
+    !window.confirm(
+        "Renew this membership?\n\nThe membership period will restart from today."
+    )
+)
+    return;
 
         try {
 
@@ -375,7 +379,10 @@ export default function Memberships() {
 
                                 filteredMemberships.map(item => (
 
-                                    <tr key={item.membershipID}>
+                                    <tr
+    key={item.membershipID}
+    className={item.status === "Expired" ? "table-danger" : ""}
+>
 
                                         <td>#{item.membershipID}</td>
 
@@ -445,9 +452,19 @@ export default function Memberships() {
 
     ) : (
 
-        <span>
-            {item.remainingDays} day(s)
-        </span>
+        item.remainingDays <= 7 ? (
+
+    <span className="text-warning fw-bold">
+        {item.remainingDays} day(s) left
+    </span>
+
+) : (
+
+    <span>
+        {item.remainingDays} day(s)
+    </span>
+
+)
 
     )}
 
@@ -477,13 +494,19 @@ export default function Memberships() {
                                                 <FaEdit />
                                             </button>
 
-                                            <button
-                                                type="button"
-                                                className="btn-table-renew"
-                                                onClick={() => renewMembership(item.membershipID)}
-                                            >
-                                                <FaRedoAlt />
-                                            </button>
+                                            {item.membershipPlan.planName !== "Walk-in" &&
+ (item.status === "Expired" || item.remainingDays <= 7) && (
+
+    <button
+        type="button"
+        className="btn-table-renew"
+        title="Renew Membership"
+        onClick={() => renewMembership(item.membershipID)}
+    >
+        <FaRedoAlt />
+    </button>
+
+)}
 
                                             {role === "Admin" && (
 
