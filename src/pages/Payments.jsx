@@ -450,10 +450,21 @@ export default function Payments() {
 
                                     <td>
 
-                                        {payment.membership?.membershipPlan?.planName ??
-                                            `#${payment.membershipID}`}
+    {payment.membership
+        ? (
+            <>
+                <strong>{payment.membership.plan}</strong>
 
-                                    </td>
+                {payment.membership.plan !== "Walk-in" && (
+                    <div className="text-muted small">
+                        {payment.membership.remainingDays} days left
+                    </div>
+                )}
+            </>
+        )
+        : `#${payment.membershipID}`}
+
+</td>
 
                                     <td>
 
