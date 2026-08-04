@@ -347,6 +347,7 @@ export default function Memberships() {
                                 <th>Plan</th>
                                 <th>Start Date</th>
                                 <th>End Date</th>
+                                <th>Remaining</th>
                                 <th>Status</th>
                                 <th width="220">Actions</th>
 
@@ -419,26 +420,52 @@ export default function Memberships() {
                                         </td>
 
                                         <td>
+    {new Date(item.endDate).toLocaleDateString()}
+</td>
 
-                                            {new Date(item.endDate).toLocaleDateString()}
+<td>
 
-                                        </td>
+    {item.status === "Expired" ? (
 
-                                        <td>
+        <span className="text-danger">
+            Expired
+        </span>
 
-                                            <span
-                                                className={
-                                                    item.status === "Active"
-                                                        ? "status-active"
-                                                        : "status-expired"
-                                                }
-                                            >
+    ) : item.membershipPlan.planName === "Walk-in" ? (
 
-                                                {item.status}
+        <span className="text-primary">
+            Today Only
+        </span>
 
-                                            </span>
+    ) : item.membershipPlan.planName === "Yearly" ? (
 
-                                        </td>
+        <span>
+            {item.remainingMonths} month(s)
+        </span>
+
+    ) : (
+
+        <span>
+            {item.remainingDays} day(s)
+        </span>
+
+    )}
+
+</td>
+
+<td>
+
+    <span
+        className={
+            item.status === "Active"
+                ? "status-active"
+                : "status-expired"
+        }
+    >
+        {item.status}
+    </span>
+
+</td>
 
                                         <td className="d-flex gap-2">
 
