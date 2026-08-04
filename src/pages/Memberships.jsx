@@ -10,60 +10,44 @@ import {
 } from "react-icons/fa";
 
 export default function Memberships() {
+
     const role = localStorage.getItem("role");
+
     const [searchParams] = useSearchParams();
+
     const statusFilter = searchParams.get("status");
 
+
     const [memberships, setMemberships] = useState([]);
-const [members, setMembers] = useState([]);
-const [plans, setPlans] = useState([]);
+    const [members, setMembers] = useState([]);
+    const [plans, setPlans] = useState([]);
+
 
     const [editingId, setEditingId] = useState(null);
 
+
     const [form, setForm] = useState({
-    memberID: "",
-    planID: "",
-    startDate: null,
-    endDate: null,
-    status: "Active"
-});
-
-    useEffect(() => {
-        loadData();
-    }, []);
-
-    async function loadData() {
-        try {
-            const [membershipRes, memberRes, planRes] = await Promise.all([
-                api.get("/Memberships"),
-                api.get("/Members"),
-                api.get("/MembershipPlans")
-            ]);
-
-            setMemberships(membershipRes.data);
-            setMembers(memberRes.data);
-            setPlans(planRes.data);
-        } catch (err) {
-            console.log(err);
-        }
-    }
-
-   function handleChange(e) {
-    setForm({
-        ...form,
-        [e.target.name]: e.target.value
+        memberID: "",
+        planID: "",
+        startDate: null,
+        endDate: null,
+        status: "Active"
     });
-}
 
-// ADD THIS HERE
-const filteredMemberships = memberships.filter((m) => {
-    if (!statusFilter) return true;
 
-    return (
-        m.status &&
-        m.status.toLowerCase() === statusFilter.toLowerCase()
-    );
-});
+    // FILTER MEMBERSHIPS HERE
+    const filteredMemberships = memberships.filter((m) => {
+
+        if (!statusFilter) {
+            return true;
+        }
+
+        return (
+            m.status &&
+            m.status.toLowerCase() === statusFilter.toLowerCase()
+        );
+
+    });
 
 async function saveMembership(e) {
     const filteredMemberships = memberships.filter(m => {
@@ -78,6 +62,7 @@ async function saveMembership(e) {
 });
 
     async function saveMembership(e) {
+
     e.preventDefault();
 
     try {
@@ -89,29 +74,38 @@ async function saveMembership(e) {
                 planID: parseInt(form.planID)
             };
 
-            console.log("POST Payload:", payload);
 
             await api.post("/Memberships", payload);
 
+
         } else {
+
 
             const payload = {
                 memberID: parseInt(form.memberID),
                 planID: parseInt(form.planID),
-                startDate: form.startDate || null,
-                endDate: form.endDate || null,
+                startDate: form.startDate,
+                endDate: form.endDate,
                 status: form.status
             };
 
-            console.log("PUT Payload:", payload);
 
-            await api.put(`/Memberships/${editingId}`, payload);
+            await api.put(
+                `/Memberships/${editingId}`,
+                payload
+            );
+
         }
 
+
         resetForm();
+
         loadData();
 
-    } catch (err) {
+
+    }
+    catch(err){
+
         console.log(err);
 
         if (err.response) {
