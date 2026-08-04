@@ -252,3 +252,37 @@ width:100%;
 }
 
 }
+
+.navbar-custom{
+    display:flex;
+    justify-content:space-between;
+    align-items:center;
+    padding:18px 30px;
+    background:white;
+    border-bottom:1px solid #eee;
+}
+
+.navbar-right{
+    display:flex;
+    align-items:center;
+    gap:15px;
+}
+
+.avatar{
+    width:45px;
+    height:45px;
+    border-radius:50%;
+    background:#0d6efd;
+    color:white;
+    display:flex;
+    justify-content:center;
+    align-items:center;
+    font-weight:bold;
+    font-size:18px;
+}
+
+.navbar-right p{
+    margin:0;
+    color:gray;
+    font-size:13px;
+}

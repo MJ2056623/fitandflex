@@ -1,70 +1,67 @@
-import "../styles/navbar.css";
+import { useNavigate } from "react-router-dom";
 
-import { FaSearch, FaBell } from "react-icons/fa";
+import "../styles/navbar.css";
 
 export default function Navbar() {
 
-    const role = localStorage.getItem("role") || "Admin";
+    const navigate = useNavigate();
+
+    const username = localStorage.getItem("username") || "User";
+    const role = localStorage.getItem("role") || "Staff";
 
     const today = new Date().toLocaleDateString("en-US", {
         weekday: "long",
+        year: "numeric",
         month: "long",
-        day: "numeric",
-        year: "numeric"
+        day: "numeric"
     });
+
+    function logout() {
+
+        localStorage.clear();
+
+        navigate("/");
+
+    }
 
     return (
 
-        <header className="navbar">
+        <div className="navbar-custom">
 
-            <div className="navbar-left">
+            <div>
 
-                <h2>FIT&FLEX Dashboard</h2>
-
-                <p>{today}</p>
+                <h5>{today}</h5>
 
             </div>
 
             <div className="navbar-right">
 
-                <div className="search-box">
+                <div className="avatar">
 
-                    <FaSearch />
-
-                    <input
-                        type="text"
-                        placeholder="Search..."
-                    />
+                    {role === "Admin" ? "A" : "S"}
 
                 </div>
 
-                <button className="notification-btn">
+                <div>
 
-                    <FaBell />
+                    <strong>{username}</strong>
+
+                    <p>{role}</p>
+
+                </div>
+
+                <button
+                    className="btn btn-danger btn-sm"
+                    onClick={logout}
+                >
+
+                    Logout
 
                 </button>
 
-                <div className="profile">
-
-                    <div className="avatar">
-
-                        {role.substring(0,1)}
-
-                    </div>
-
-                    <div>
-
-                        <h4>{role}</h4>
-
-                        <small>FIT&FLEX</small>
-
-                    </div>
-
-                </div>
-
             </div>
 
-        </header>
+        </div>
 
     );
 

@@ -45,15 +45,18 @@ function App() {
                     }
                 />
 
-                {/* Membership Plans */}
                 <Route
-                    path="/plans"
-                    element={
-                        <ProtectedRoute>
-                            <MembershipPlans />
-                        </ProtectedRoute>
-                    }
-                />
+    path="/plans"
+    element={
+        localStorage.getItem("role") === "Admin"
+            ? (
+                <ProtectedRoute>
+                    <MembershipPlans />
+                </ProtectedRoute>
+            )
+            : <Navigate to="/dashboard" />
+    }
+/>
 
                 {/* Memberships */}
                 <Route

@@ -209,6 +209,8 @@ export default function MembershipPlans() {
 
                     <div className="card-body">
 
+                        {role === "Admin" && (
+
                         <form onSubmit={savePlan}>
 
                             <div className="row">
@@ -368,6 +370,7 @@ export default function MembershipPlans() {
                             </div>
 
                         </form>
+                        )}
 
                     </div>
 

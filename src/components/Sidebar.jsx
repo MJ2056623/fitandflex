@@ -73,15 +73,11 @@ export default function Sidebar() {
                     <span>Members</span>
                 </NavLink>
 
-                <NavLink
-                    to="/plans"
-                    className={({ isActive }) =>
-                        isActive ? "menu-item active-menu" : "menu-item"
-                    }
-                >
-                    <FaClipboardList />
-                    <span>Membership Plans</span>
-                </NavLink>
+                {role === "Admin" && (
+    <NavLink to="/plans">
+        Membership Plans
+    </NavLink>
+)}
 
                 <NavLink
                     to="/memberships"
