@@ -12,6 +12,7 @@ import {
 export default function Memberships() {
     const role = localStorage.getItem("role");
     const [searchParams] = useSearchParams();
+    const statusFilter = searchParams.get("status");
 
     const [memberships, setMemberships] = useState([]);
 const [members, setMembers] = useState([]);
@@ -47,24 +48,34 @@ const [plans, setPlans] = useState([]);
         }
     }
 
-    function handleChange(e) {
-        setForm({
-            ...form,
-            [e.target.name]: e.target.value
-        });
+   function handleChange(e) {
+    setForm({
+        ...form,
+        [e.target.name]: e.target.value
+    });
+}
 
-        
-    }
+// ADD THIS HERE
+const filteredMemberships = memberships.filter((m) => {
+    if (!statusFilter) return true;
 
-    const filteredMemberships =
-    statusFilter
-        ? memberships.filter(
-              m =>
-                  m.status &&
-                  m.status.toLowerCase() ===
-                      statusFilter.toLowerCase()
-          )
-        : memberships;
+    return (
+        m.status &&
+        m.status.toLowerCase() === statusFilter.toLowerCase()
+    );
+});
+
+async function saveMembership(e) {
+    const filteredMemberships = memberships.filter(m => {
+
+    if (!statusFilter) return true;
+
+    return (
+        m.status &&
+        m.status.toLowerCase() === statusFilter.toLowerCase()
+    );
+
+});
 
     async function saveMembership(e) {
     e.preventDefault();
@@ -291,10 +302,12 @@ const [plans, setPlans] = useState([]);
                         </thead>
 
                         <tbody>
-                            {memberships.length === 0 ? (
+                           {filteredMemberships.length === 0 ? (
                                 <tr>
                                     <td colSpan="7" className="text-center">
-                                        No memberships found.
+                                        {statusFilter
+    ? `No ${statusFilter} memberships found.`
+    : "No memberships found."}
                                     </td>
                                 </tr>
                             ) : (
@@ -375,4 +388,5 @@ const [plans, setPlans] = useState([]);
             </div>
         </DashboardLayout>
     );
+}
 }
