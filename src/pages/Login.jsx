@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 import { FaDumbbell, FaUser, FaLock } from "react-icons/fa";
 
 import api from "../api/api";
@@ -135,6 +135,16 @@ export default function Login() {
                         >
                             LOGIN
                         </button>
+
+                        <p className="mt-3 text-center">
+
+    Don't have an account?
+
+    <Link to="/register">
+        Register Here
+    </Link>
+
+</p>
 
                     </form>
 

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 
 import Login from "./pages/Login";
+import Register from "./pages/Register";
 import Dashboard from "./pages/Dashboard";
 import Members from "./pages/Members";
 import MembershipPlans from "./pages/MembershipPlans";
@@ -17,6 +18,11 @@ function App() {
                 <Route
                     path="/"
                     element={<Login />}
+                />
+                {/* Register */}
+                <Route
+                    path="/register"
+                    element={<Register />}
                 />
 
                 {/* Dashboard */}
