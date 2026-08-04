@@ -51,9 +51,17 @@ export default function Payments() {
         setMembers(memberRes.data);
         setPlans(planRes.data);
 
-        const availableMemberships = membershipRes.data.filter(
-            m => m.status === "Active" && !m.isPaid
-        );
+        const availableMemberships = membershipRes.data.filter(m => {
+
+    if (m.status !== "Active")
+        return false;
+
+    if (m.isPaid)
+        return false;
+
+    return true;
+
+});
 
         console.log(availableMemberships);
 

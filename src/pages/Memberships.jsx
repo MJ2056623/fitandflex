@@ -388,11 +388,29 @@ export default function Memberships() {
 
                                         <td>
 
-                                            {item.membershipPlan
-                                                ? item.membershipPlan.planName
-                                                : item.planID}
+    <strong>
 
-                                        </td>
+        {item.membershipPlan.planName}
+
+    </strong>
+
+    {item.membershipPlan.planName !== "Walk-in" && (
+
+        <div className="text-muted small">
+
+            {Math.max(
+                0,
+                Math.ceil(
+                    (new Date(item.endDate) - new Date()) /
+                    (1000 * 60 * 60 * 24)
+                )
+            )} days left
+
+        </div>
+
+    )}
+
+</td>
 
                                         <td>
 
