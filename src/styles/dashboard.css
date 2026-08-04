@@ -689,3 +689,13 @@ gap:25px;
 .table-responsive{
     overflow-x:auto;
 }
+
+.stat-card.clickable{
+    cursor:pointer;
+    transition:.25s;
+}
+
+.stat-card.clickable:hover{
+    transform:translateY(-5px);
+    box-shadow:0 10px 25px rgba(0,0,0,.15);
+}

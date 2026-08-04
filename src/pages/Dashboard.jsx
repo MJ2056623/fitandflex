@@ -9,8 +9,7 @@ import {
     FaMoneyBillWave,
     FaClock,
     FaUserPlus,
-    FaCreditCard,
-    FaArrowRight
+    FaFileAlt
 } from "react-icons/fa";
 
 import "../styles/dashboard.css";
@@ -39,14 +38,34 @@ export default function Dashboard() {
 
             setDashboard(res.data);
 
-        }
-        catch (err) {
+        } catch (err) {
 
             console.log(err);
 
         }
 
     }
+
+    // ==========================
+    // Gym Open / Closed
+    // ==========================
+
+    const now = new Date();
+
+    const isSunday = now.getDay() === 0;
+
+    const minutes =
+        now.getHours() * 60 +
+        now.getMinutes();
+
+    const open = 7 * 60;
+
+    const close = 20 * 60 + 30;
+
+    const isOpen =
+        !isSunday &&
+        minutes >= open &&
+        minutes <= close;
 
     return (
 
@@ -85,7 +104,10 @@ export default function Dashboard() {
 
             <div className="dashboard-grid">
 
-                <div className="stat-card">
+                <div
+                    className="stat-card clickable"
+                    onClick={() => navigate("/members")}
+                >
 
                     <div className="card-circle blue">
 
@@ -99,7 +121,10 @@ export default function Dashboard() {
 
                 </div>
 
-                <div className="stat-card">
+                <div
+                    className="stat-card clickable"
+                    onClick={() => navigate("/memberships?status=active")}
+                >
 
                     <div className="card-circle green">
 
@@ -113,7 +138,10 @@ export default function Dashboard() {
 
                 </div>
 
-                <div className="stat-card">
+                <div
+                    className="stat-card clickable"
+                    onClick={() => navigate("/memberships?status=expired")}
+                >
 
                     <div className="card-circle orange">
 
@@ -127,7 +155,10 @@ export default function Dashboard() {
 
                 </div>
 
-                <div className="stat-card">
+                <div
+                    className="stat-card clickable"
+                    onClick={() => navigate("/payments")}
+                >
 
                     <div className="card-circle navy">
 
@@ -147,11 +178,13 @@ export default function Dashboard() {
 
             <div className="dashboard-bottom">
 
+                {/* Reports */}
+
                 <div className="dashboard-panel">
 
                     <div className="panel-header">
 
-                        <h3>Quick Actions</h3>
+                        <h3>Reports</h3>
 
                     </div>
 
@@ -160,37 +193,31 @@ export default function Dashboard() {
                         onClick={() => navigate("/members")}
                     >
 
-                        <FaUsers />
+                        <FaFileAlt />
 
-                        Members
-
-                        <FaArrowRight />
+                        Member List Report
 
                     </button>
 
                     <button
                         className="action-btn"
-                        onClick={() => navigate("/plans")}
+                        onClick={() => navigate("/memberships?status=active")}
                     >
 
-                        <FaClipboardCheck />
+                        <FaFileAlt />
 
-                        Membership Plans
-
-                        <FaArrowRight />
+                        Active Membership Report
 
                     </button>
 
                     <button
                         className="action-btn"
-                        onClick={() => navigate("/memberships")}
+                        onClick={() => navigate("/memberships?status=expired")}
                     >
 
-                        <FaClock />
+                        <FaFileAlt />
 
-                        Memberships
-
-                        <FaArrowRight />
+                        Expired Membership Report
 
                     </button>
 
@@ -199,29 +226,59 @@ export default function Dashboard() {
                         onClick={() => navigate("/payments")}
                     >
 
-                        <FaCreditCard />
+                        <FaFileAlt />
 
-                        Payments
-
-                        <FaArrowRight />
+                        Payment Report
 
                     </button>
 
                 </div>
 
+                {/* Gym Information */}
+
                 <div className="dashboard-panel">
 
                     <div className="panel-header">
 
-                        <h3>System Overview</h3>
+                        <h3>Gym Information</h3>
 
                     </div>
 
                     <div className="overview-row">
 
-                        <span>Total Membership Plans</span>
+                        <span>Business Days</span>
 
-                        <strong>{dashboard.totalPlans}</strong>
+                        <strong>Monday - Saturday</strong>
+
+                    </div>
+
+                    <div className="overview-row">
+
+                        <span>Opening Hours</span>
+
+                        <strong>7:00 AM - 8:30 PM</strong>
+
+                    </div>
+
+                    <div className="overview-row">
+
+                        <span>Sunday</span>
+
+                        <strong>Closed</strong>
+
+                    </div>
+
+                    <div className="overview-row">
+
+                        <span>Current Status</span>
+
+                        <strong
+                            style={{
+                                color: isOpen ? "green" : "red"
+                            }}
+                        >
+                            {isOpen ? "🟢 OPEN" : "🔴 CLOSED"}
+                        </strong>
 
                     </div>
 
