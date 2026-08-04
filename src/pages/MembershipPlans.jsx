@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import api from "../api/api";
 
@@ -13,6 +14,9 @@ import {
 export default function MembershipPlans() {
 
     const role = localStorage.getItem("role");
+    const [searchParams] = useSearchParams();
+
+    const statusFilter = searchParams.get("status");
 
     const [plans, setPlans] = useState([]);
     const [search, setSearch] = useState("");

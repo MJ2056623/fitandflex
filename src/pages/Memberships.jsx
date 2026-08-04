@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import api from "../api/api";
 
@@ -51,7 +52,19 @@ const [plans, setPlans] = useState([]);
             ...form,
             [e.target.name]: e.target.value
         });
+
+        
     }
+
+    const filteredMemberships =
+    statusFilter
+        ? memberships.filter(
+              m =>
+                  m.status &&
+                  m.status.toLowerCase() ===
+                      statusFilter.toLowerCase()
+          )
+        : memberships;
 
     async function saveMembership(e) {
     e.preventDefault();
