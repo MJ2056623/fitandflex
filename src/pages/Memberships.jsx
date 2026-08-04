@@ -49,18 +49,6 @@ export default function Memberships() {
 
     });
 
-async function saveMembership(e) {
-    const filteredMemberships = memberships.filter(m => {
-
-    if (!statusFilter) return true;
-
-    return (
-        m.status &&
-        m.status.toLowerCase() === statusFilter.toLowerCase()
-    );
-
-});
-
     async function saveMembership(e) {
 
     e.preventDefault();
@@ -97,10 +85,49 @@ async function saveMembership(e) {
 
         }
 
+useEffect(() => {
+    loadData();
+}, []);
 
-        resetForm();
 
-        loadData();
+async function loadData() {
+
+    try {
+
+        const [
+            membershipRes,
+            memberRes,
+            planRes
+        ] = await Promise.all([
+            api.get("/Memberships"),
+            api.get("/Members"),
+            api.get("/MembershipPlans")
+        ]);
+
+
+        setMemberships(membershipRes.data);
+        setMembers(memberRes.data);
+        setPlans(planRes.data);
+
+
+    } catch(err){
+
+        console.log(err);
+
+    }
+
+}
+
+
+
+function handleChange(e){
+
+    setForm({
+        ...form,
+        [e.target.name]: e.target.value
+    });
+
+}
 
 
     }
@@ -382,5 +409,4 @@ async function saveMembership(e) {
             </div>
         </DashboardLayout>
     );
-}
 }
