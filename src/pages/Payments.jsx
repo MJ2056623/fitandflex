@@ -169,15 +169,15 @@ export default function Payments() {
 
     function editPayment(payment) {
 
-        setEditingId(payment.paymentID);
+    setEditingId(payment.paymentID);
 
-        setForm({
-            memberID: payment.memberID,
-            membershipID: payment.membershipID,
-            amount: payment.amount
-        });
+    setForm({
+        memberID: payment.member.memberID,
+        membershipID: payment.membership.membershipID,
+        amount: payment.amount
+    });
 
-    }
+}
 
     async function deletePayment(id) {
 
