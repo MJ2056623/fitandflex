@@ -55,12 +55,31 @@ export default function Members() {
 
     function handleChange(e) {
 
+    const { name, value } = e.target;
+
+    if (name === "phone") {
+        // Numbers only
+        const numbersOnly = value.replace(/\D/g, "");
+
+        // Maximum of 11 digits
+        if (numbersOnly.length > 11) {
+            return;
+        }
+
         setForm({
             ...form,
-            [e.target.name]: e.target.value
+            phone: numbersOnly
         });
 
+        return;
     }
+
+    setForm({
+        ...form,
+        [name]: value
+    });
+
+}
 
     async function saveMember(e) {
 
@@ -260,13 +279,17 @@ export default function Members() {
                     <div className="col-md-4 mb-3">
 
                         <input
-                            className="form-control"
-                            placeholder="Phone Number"
-                            name="phone"
-                            value={form.phone}
-                            onChange={handleChange}
-                            required
-                        />
+    type="tel"
+    className="form-control"
+    placeholder="09XXXXXXXXX"
+    name="phone"
+    value={form.phone}
+    onChange={handleChange}
+    maxLength="11"
+    pattern="09[0-9]{9}"
+    title="Phone number must contain exactly 11 digits and start with 09."
+    required
+/>
 
                     </div>
 
@@ -355,20 +378,15 @@ export default function Members() {
                     <tr>
 
                         <th>ID</th>
-
-                        <th>Full Name</th>
-
-                        <th>Gender</th>
-
-                        <th>Email</th>
-
-                        <th>Phone</th>
-
-                        <th>Status</th>
-
-                        <th width="180">
-                            Action
-                        </th>
+<th>Full Name</th>
+<th>Gender</th>
+<th>Email</th>
+<th>Phone</th>
+<th>Address</th>
+<th>Status</th>
+<th width="180">
+    Action
+</th>
 
                     </tr>
 
@@ -381,7 +399,7 @@ export default function Members() {
                         <tr>
 
                             <td
-                                colSpan="7"
+                                colSpan="8"
                                 className="text-center py-4"
                             >
 
@@ -420,18 +438,18 @@ export default function Members() {
                                 </td>
 
                                 <td>
-                                    {member.phone}
-                                </td>
+    {member.phone}
+</td>
 
-                                <td>
+<td style={{ maxWidth: "250px", whiteSpace: "normal" }}>
+    {member.address}
+</td>
 
-                                    <span className="badge success">
-
-                                        {member.status}
-
-                                    </span>
-
-                                </td>
+<td>
+    <span className="badge success">
+        {member.status}
+    </span>
+</td>
 
                                 <td>
 
