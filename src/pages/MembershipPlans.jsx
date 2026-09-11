@@ -49,10 +49,10 @@ export default function MembershipPlans() {
 
         const { name, value } = e.target;
 
-        let updated = {
-            ...form,
-            [name]: value
-        };
+         setForm({
+        ...form,
+        [name]: value
+        });
 
         if (name === "planName") {
 
@@ -324,16 +324,19 @@ export default function MembershipPlans() {
                                 <div className="col-md-4 mb-3">
 
                                     <label className="form-label">
+    Price (₱)
+</label>
 
-                                        Price
-
-                                    </label>
-
-                                    <input
-                                        className="form-control"
-                                        value={`₱${Number(form.price).toLocaleString()}`}
-                                        readOnly
-                                    />
+                                   <input
+    type="number"
+    className="form-control"
+    name="price"
+    value={form.price}
+    onChange={handleChange}
+    min="0"
+    step="0.01"
+    required
+/>
 
                                 </div>
 
@@ -480,31 +483,29 @@ export default function MembershipPlans() {
 
                                             </td>
 
-                                            <td>
+                                           <td>
 
-                                                <button
-                                                    className="btn btn-warning btn-sm me-2"
-                                                    onClick={()=>editPlan(plan)}
-                                                >
+    {role === "Admin" && (
+        <>
+            <button
+                className="btn btn-warning btn-sm me-2"
+                onClick={() => editPlan(plan)}
+                title="Edit Plan"
+            >
+                <FaEdit />
+            </button>
 
-                                                    <FaEdit/>
+            <button
+                className="btn btn-danger btn-sm"
+                onClick={() => deletePlan(plan.planID)}
+                title="Delete Plan"
+            >
+                <FaTrash />
+            </button>
+        </>
+    )}
 
-                                                </button>
-
-                                                {role==="Admin" &&
-
-                                                    <button
-                                                        className="btn btn-danger btn-sm"
-                                                        onClick={()=>deletePlan(plan.planID)}
-                                                    >
-
-                                                        <FaTrash/>
-
-                                                    </button>
-
-                                                }
-
-                                            </td>
+</td>
 
                                         </tr>
 
