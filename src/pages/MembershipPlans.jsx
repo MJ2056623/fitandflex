@@ -121,11 +121,25 @@ export default function MembershipPlans() {
         }
         catch (err) {
 
-            console.log(err);
+    console.log(err);
 
-            alert("Unable to save membership plan.");
+    if (err.response) {
 
-        }
+        const message =
+            typeof err.response.data === "string"
+                ? err.response.data
+                : "Unable to save membership plan.";
+
+        alert(message);
+
+    }
+    else {
+
+        alert("Unable to save membership plan.");
+
+    }
+
+}
 
     }
 
