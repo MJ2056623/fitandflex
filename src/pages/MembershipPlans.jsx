@@ -46,50 +46,44 @@ export default function MembershipPlans() {
     }
 
     function handleChange(e) {
+    const { name, value } = e.target;
 
-        const { name, value } = e.target;
-
-         setForm({
+    const updated = {
         ...form,
         [name]: value
-        });
+    };
 
-        if (name === "planName") {
+    if (name === "planName") {
 
-            if (value === "Walk-in") {
-
-                updated.durationMonths = 0;
-                updated.price = 100;
-
-            }
-            else {
-
-                updated.durationMonths = "";
-                updated.price = 0;
-
-            }
-
+        if (value === "Walk-in") {
+            updated.durationMonths = 0;
+            updated.price = 100;
         }
-
-        if (name === "durationMonths") {
-
-            if (updated.planName === "Monthly") {
-
-                updated.price = Number(value) * 3000;
-
-            }
-
-            if (updated.planName === "Yearly") {
-
-                updated.price = Number(value) * 3000;
-
-            }
-
+        else {
+            updated.durationMonths = "";
+            updated.price = 0;
         }
-
-        setForm(updated);
 
     }
+
+    if (name === "durationMonths") {
+
+        if (updated.planName === "Monthly") {
+            updated.price = Number(value) * 3000;
+        }
+
+        if (updated.planName === "Yearly") {
+            updated.price = Number(value) * 3000;
+        }
+
+        if (updated.planName === "Walk-in") {
+            updated.price = 100;
+        }
+
+    }
+
+    setForm(updated);
+}
 
     async function savePlan(e) {
 
@@ -338,19 +332,19 @@ export default function MembershipPlans() {
                                 <div className="col-md-4 mb-3">
 
                                     <label className="form-label">
-    Price (₱)
-</label>
+                                Price (₱)
+                                </label>
 
-                                   <input
-    type="number"
-    className="form-control"
-    name="price"
-    value={form.price}
-    onChange={handleChange}
-    min="0"
-    step="0.01"
-    required
-/>
+                                  <input
+                                    type="number"
+                                    className="form-control"
+                                    name="price"
+                                    value={form.price}
+                                    onChange={handleChange}
+                                    min="0"
+                                    step="0.01"
+                                    required
+                                    />
 
                                 </div>
 
