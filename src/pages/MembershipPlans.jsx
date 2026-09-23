@@ -4,52 +4,47 @@ import DashboardLayout from "../layouts/DashboardLayout";
 import api from "../api/api";
 
 import {
-    FaUsers,
-    FaUserPlus,
+    FaClipboardList,
+    FaPlus,
     FaEdit,
     FaTrash,
     FaSearch
 } from "react-icons/fa";
 
-export default function Members() {
+export default function MembershipPlans() {
 
     const role = localStorage.getItem("role");
 
-    const emptyMember = {
-        firstName: "",
-        lastName: "",
-        gender: "",
-        birthDate: "",
-        phone: "",
-        email: "",
-        address: ""
+    const emptyPlan = {
+        planName: "",
+        durationMonths: "",
+        price: ""
     };
 
-    const [members, setMembers] = useState([]);
+    const [plans, setPlans] = useState([]);
     const [search, setSearch] = useState("");
 
-    // ADD MEMBER FORM
-    const [form, setForm] = useState(emptyMember);
+    // CREATE PLAN FORM
+    const [form, setForm] = useState(emptyPlan);
 
-    // SEPARATE EDIT MEMBER FORM
-    const [editForm, setEditForm] = useState(emptyMember);
+    // EDIT PLAN FORM
+    const [editForm, setEditForm] = useState(emptyPlan);
 
     const [editingId, setEditingId] = useState(null);
 
     useEffect(() => {
-        loadMembers();
+        loadPlans();
     }, []);
 
-    async function loadMembers() {
+    async function loadPlans() {
 
         try {
 
-            const res = await api.get("/Members");
+            const res = await api.get("/MembershipPlans");
 
-            setMembers(res.data);
+            setPlans(res.data);
 
-        }
-        catch (err) {
+        } catch (err) {
 
             console.log(err);
 
@@ -57,26 +52,13 @@ export default function Members() {
 
     }
 
-    // ADD FORM
+    // =========================
+    // CREATE FORM
+    // =========================
+
     function handleChange(e) {
 
         const { name, value } = e.target;
-
-        if (name === "phone") {
-
-            const numbersOnly = value.replace(/\D/g, "");
-
-            if (numbersOnly.length > 11) {
-                return;
-            }
-
-            setForm({
-                ...form,
-                phone: numbersOnly
-            });
-
-            return;
-        }
 
         setForm({
             ...form,
@@ -85,26 +67,43 @@ export default function Members() {
 
     }
 
+    async function savePlan(e) {
+
+        e.preventDefault();
+
+        try {
+
+            await api.post("/MembershipPlans", {
+                planName: form.planName,
+                durationMonths: Number(form.durationMonths),
+                price: Number(form.price)
+            });
+
+            setForm(emptyPlan);
+
+            await loadPlans();
+
+        } catch (err) {
+
+            console.log(err);
+
+            if (err.response) {
+                alert(err.response.data);
+            } else {
+                alert("Unable to add membership plan.");
+            }
+
+        }
+
+    }
+
+    // =========================
     // EDIT FORM
+    // =========================
+
     function handleEditChange(e) {
 
         const { name, value } = e.target;
-
-        if (name === "phone") {
-
-            const numbersOnly = value.replace(/\D/g, "");
-
-            if (numbersOnly.length > 11) {
-                return;
-            }
-
-            setEditForm({
-                ...editForm,
-                phone: numbersOnly
-            });
-
-            return;
-        }
 
         setEditForm({
             ...editForm,
@@ -113,80 +112,45 @@ export default function Members() {
 
     }
 
-    // ADD MEMBER ONLY
-    async function saveMember(e) {
+    function editPlan(plan) {
 
-        e.preventDefault();
-
-        try {
-
-            await api.post("/Members", form);
-
-            setForm(emptyMember);
-
-            await loadMembers();
-
-        }
-        catch (err) {
-
-            console.log(err);
-
-            if (err.response) {
-                alert(err.response.data);
-            }
-            else {
-                alert("Unable to add member.");
-            }
-
-        }
-
-    }
-
-    // OPEN SEPARATE EDIT FORM
-    function editMember(member) {
-
-        setEditingId(member.memberID);
+        setEditingId(plan.membershipPlanID);
 
         setEditForm({
-            firstName: member.firstName || "",
-            lastName: member.lastName || "",
-            gender: member.gender || "",
-            birthDate: member.birthDate
-                ? member.birthDate.substring(0, 10)
-                : "",
-            phone: member.phone || "",
-            email: member.email || "",
-            address: member.address || ""
+            planName: plan.planName || "",
+            durationMonths: plan.durationMonths || "",
+            price: plan.price || ""
         });
 
     }
 
-    // UPDATE MEMBER
-    async function updateMember(e) {
+    async function updatePlan(e) {
 
         e.preventDefault();
 
         try {
 
             await api.put(
-                `/Members/${editingId}`,
-                editForm
+                `/MembershipPlans/${editingId}`,
+                {
+                    planName: editForm.planName,
+                    durationMonths: Number(editForm.durationMonths),
+                    price: Number(editForm.price)
+                }
             );
 
             cancelEdit();
 
-            await loadMembers();
+            await loadPlans();
 
-        }
-        catch (err) {
+        } catch (err) {
 
             console.log(err);
 
             if (err.response) {
                 alert(err.response.data);
-            }
-            else {
-                alert("Unable to update member.");
+            } else {
+                alert("Unable to update membership plan.");
             }
 
         }
@@ -196,43 +160,43 @@ export default function Members() {
     function cancelEdit() {
 
         setEditingId(null);
-        setEditForm(emptyMember);
+        setEditForm(emptyPlan);
 
     }
 
-    async function deleteMember(id) {
+    // =========================
+    // DELETE
+    // =========================
 
-        if (!window.confirm("Delete this member?"))
+    async function deletePlan(id) {
+
+        if (!window.confirm("Delete this membership plan?")) {
             return;
+        }
 
         try {
 
-            await api.delete(`/Members/${id}`);
+            await api.delete(`/MembershipPlans/${id}`);
 
-            await loadMembers();
+            await loadPlans();
 
-        }
-        catch (err) {
+        } catch (err) {
 
             console.log(err);
 
-            alert("Unable to delete member.");
+            alert("Unable to delete membership plan.");
 
         }
 
     }
 
-    const filteredMembers = members.filter(member =>
+    // =========================
+    // SEARCH
+    // =========================
 
-        `${member.firstName} ${member.lastName}`
-            .toLowerCase()
-            .includes(search.toLowerCase()) ||
+    const filteredPlans = plans.filter(plan =>
 
-        (member.email || "")
-            .toLowerCase()
-            .includes(search.toLowerCase()) ||
-
-        (member.phone || "")
+        (plan.planName || "")
             .toLowerCase()
             .includes(search.toLowerCase())
 
@@ -242,14 +206,18 @@ export default function Members() {
 
         <DashboardLayout>
 
+            {/* =========================
+                PAGE HEADER
+            ========================== */}
+
             <div className="dashboard-header">
 
                 <div>
 
-                    <h1>Members</h1>
+                    <h1>Membership Plans</h1>
 
                     <p>
-                        Manage all registered gym members.
+                        Manage available gym membership plans.
                     </p>
 
                 </div>
@@ -258,12 +226,12 @@ export default function Members() {
 
 
             {/* =========================
-                ADD MEMBER FORM
+                ADD PLAN FORM
             ========================== */}
 
             <div className="dashboard-panel mb-4">
 
-                <form onSubmit={saveMember}>
+                <form onSubmit={savePlan}>
 
                     <div className="row">
 
@@ -271,9 +239,9 @@ export default function Members() {
 
                             <input
                                 className="form-control"
-                                placeholder="First Name"
-                                name="firstName"
-                                value={form.firstName}
+                                placeholder="Plan Name"
+                                name="planName"
+                                value={form.planName}
                                 onChange={handleChange}
                                 required
                             />
@@ -284,52 +252,13 @@ export default function Members() {
                         <div className="col-md-4 mb-3">
 
                             <input
+                                type="number"
                                 className="form-control"
-                                placeholder="Last Name"
-                                name="lastName"
-                                value={form.lastName}
+                                placeholder="Duration in Months"
+                                name="durationMonths"
+                                value={form.durationMonths}
                                 onChange={handleChange}
-                                required
-                            />
-
-                        </div>
-
-
-                        <div className="col-md-4 mb-3">
-
-                            <select
-                                className="form-select"
-                                name="gender"
-                                value={form.gender}
-                                onChange={handleChange}
-                                required
-                            >
-
-                                <option value="">
-                                    Select Gender
-                                </option>
-
-                                <option value="Male">
-                                    Male
-                                </option>
-
-                                <option value="Female">
-                                    Female
-                                </option>
-
-                            </select>
-
-                        </div>
-
-
-                        <div className="col-md-4 mb-3">
-
-                            <input
-                                type="date"
-                                className="form-control"
-                                name="birthDate"
-                                value={form.birthDate}
-                                onChange={handleChange}
+                                min="1"
                                 required
                             />
 
@@ -339,44 +268,14 @@ export default function Members() {
                         <div className="col-md-4 mb-3">
 
                             <input
-                                type="tel"
+                                type="number"
                                 className="form-control"
-                                placeholder="09XXXXXXXXX"
-                                name="phone"
-                                value={form.phone}
+                                placeholder="Price"
+                                name="price"
+                                value={form.price}
                                 onChange={handleChange}
-                                maxLength="11"
-                                pattern="09[0-9]{9}"
-                                title="Phone number must contain exactly 11 digits and start with 09."
-                                required
-                            />
-
-                        </div>
-
-
-                        <div className="col-md-4 mb-3">
-
-                            <input
-                                type="email"
-                                className="form-control"
-                                placeholder="Email Address"
-                                name="email"
-                                value={form.email}
-                                onChange={handleChange}
-                                required
-                            />
-
-                        </div>
-
-
-                        <div className="col-md-12 mb-4">
-
-                            <input
-                                className="form-control"
-                                placeholder="Complete Address"
-                                name="address"
-                                value={form.address}
-                                onChange={handleChange}
+                                min="0"
+                                step="0.01"
                                 required
                             />
 
@@ -387,9 +286,9 @@ export default function Members() {
 
                             <button className="btn-add">
 
-                                <FaUserPlus className="me-2" />
+                                <FaPlus className="me-2" />
 
-                                Add Member
+                                Add Plan
 
                             </button>
 
@@ -403,7 +302,7 @@ export default function Members() {
 
 
             {/* =========================
-                MEMBERS TABLE
+                PLANS TABLE
             ========================== */}
 
             <div className="dashboard-panel">
@@ -412,9 +311,9 @@ export default function Members() {
 
                     <span>
 
-                        <FaUsers className="me-2" />
+                        <FaClipboardList className="me-2" />
 
-                        Registered Members
+                        Membership Plans
 
                     </span>
 
@@ -431,7 +330,7 @@ export default function Members() {
 
                             <input
                                 className="form-control"
-                                placeholder="Search member..."
+                                placeholder="Search plan..."
                                 value={search}
                                 onChange={(e) =>
                                     setSearch(e.target.value)
@@ -452,15 +351,10 @@ export default function Members() {
                         <tr>
 
                             <th>ID</th>
-                            <th>Full Name</th>
-                            <th>Gender</th>
-                            <th>Email</th>
-                            <th>Phone</th>
-                            <th>Address</th>
-                            <th>Status</th>
-                            <th width="180">
-                                Action
-                            </th>
+                            <th>Plan Name</th>
+                            <th>Duration</th>
+                            <th>Price</th>
+                            <th width="180">Action</th>
 
                         </tr>
 
@@ -469,16 +363,16 @@ export default function Members() {
 
                     <tbody>
 
-                        {filteredMembers.length === 0 ? (
+                        {filteredPlans.length === 0 ? (
 
                             <tr>
 
                                 <td
-                                    colSpan="8"
+                                    colSpan="5"
                                     className="text-center py-4"
                                 >
 
-                                    No members found.
+                                    No membership plans found.
 
                                 </td>
 
@@ -486,71 +380,36 @@ export default function Members() {
 
                         ) : (
 
-                            filteredMembers.map(member => (
+                            filteredPlans.map(plan => (
 
-                                <tr key={member.memberID}>
+                                <tr key={plan.membershipPlanID}>
 
                                     <td>
-                                        {member.memberID}
+                                        {plan.membershipPlanID}
                                     </td>
 
-
                                     <td>
-
                                         <strong>
-
-                                            {member.firstName}{" "}
-                                            {member.lastName}
-
+                                            {plan.planName}
                                         </strong>
-
                                     </td>
-
 
                                     <td>
-                                        {member.gender}
+                                        {plan.durationMonths} month(s)
                                     </td>
-
 
                                     <td>
-                                        {member.email}
+                                        ₱{Number(plan.price).toLocaleString()}
                                     </td>
-
-
-                                    <td>
-                                        {member.phone}
-                                    </td>
-
-
-                                    <td
-                                        style={{
-                                            maxWidth: "250px",
-                                            whiteSpace: "normal"
-                                        }}
-                                    >
-                                        {member.address}
-                                    </td>
-
-
-                                    <td>
-
-                                        <span className="badge success">
-
-                                            {member.status}
-
-                                        </span>
-
-                                    </td>
-
 
                                     <td>
 
                                         <button
                                             className="btn btn-warning btn-sm me-2"
                                             onClick={() =>
-                                                editMember(member)
+                                                editPlan(plan)
                                             }
-                                            title="Edit Member"
+                                            title="Edit Plan"
                                         >
 
                                             <FaEdit />
@@ -563,11 +422,11 @@ export default function Members() {
                                             <button
                                                 className="btn btn-danger btn-sm"
                                                 onClick={() =>
-                                                    deleteMember(
-                                                        member.memberID
+                                                    deletePlan(
+                                                        plan.membershipPlanID
                                                     )
                                                 }
-                                                title="Delete Member"
+                                                title="Delete Plan"
                                             >
 
                                                 <FaTrash />
@@ -592,7 +451,7 @@ export default function Members() {
 
 
             {/* =========================
-                SEPARATE EDIT MEMBER FORM
+                VERTICAL EDIT PLAN FORM
             ========================== */}
 
             {editingId !== null && (
@@ -614,7 +473,7 @@ export default function Members() {
                         className="dashboard-panel"
                         style={{
                             width: "100%",
-                            maxWidth: "900px",
+                            maxWidth: "550px",
                             maxHeight: "90vh",
                             overflowY: "auto",
                             backgroundColor: "#fff"
@@ -627,156 +486,97 @@ export default function Members() {
 
                                 <FaEdit className="me-2" />
 
-                                Edit Member
+                                Edit Membership Plan
 
                             </span>
 
                         </div>
 
 
-                        <form onSubmit={updateMember}>
+                        <form onSubmit={updatePlan}>
 
-                            <div className="row">
+                            {/* PLAN NAME */}
 
-                                <div className="col-md-4 mb-3">
+                            <div className="mb-3">
 
-                                    <input
-                                        className="form-control"
-                                        placeholder="First Name"
-                                        name="firstName"
-                                        value={editForm.firstName}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
+                                <label className="form-label">
+                                    Plan Name
+                                </label>
 
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <input
-                                        className="form-control"
-                                        placeholder="Last Name"
-                                        name="lastName"
-                                        value={editForm.lastName}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <select
-                                        className="form-select"
-                                        name="gender"
-                                        value={editForm.gender}
-                                        onChange={handleEditChange}
-                                        required
-                                    >
-
-                                        <option value="">
-                                            Select Gender
-                                        </option>
-
-                                        <option value="Male">
-                                            Male
-                                        </option>
-
-                                        <option value="Female">
-                                            Female
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        name="birthDate"
-                                        value={editForm.birthDate}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <input
-                                        type="tel"
-                                        className="form-control"
-                                        placeholder="09XXXXXXXXX"
-                                        name="phone"
-                                        value={editForm.phone}
-                                        onChange={handleEditChange}
-                                        maxLength="11"
-                                        pattern="09[0-9]{9}"
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <input
-                                        type="email"
-                                        className="form-control"
-                                        placeholder="Email Address"
-                                        name="email"
-                                        value={editForm.email}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-12 mb-4">
-
-                                    <input
-                                        className="form-control"
-                                        placeholder="Complete Address"
-                                        name="address"
-                                        value={editForm.address}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-12">
-
-                                    <button className="btn-add me-2">
-
-                                        <FaEdit className="me-2" />
-
-                                        Update Member
-
-                                    </button>
-
-
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={cancelEdit}
-                                    >
-
-                                        Cancel
-
-                                    </button>
-
-                                </div>
+                                <input
+                                    className="form-control"
+                                    name="planName"
+                                    value={editForm.planName}
+                                    onChange={handleEditChange}
+                                    required
+                                />
 
                             </div>
+
+
+                            {/* DURATION */}
+
+                            <div className="mb-3">
+
+                                <label className="form-label">
+                                    Duration in Months
+                                </label>
+
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    name="durationMonths"
+                                    value={editForm.durationMonths}
+                                    onChange={handleEditChange}
+                                    min="1"
+                                    required
+                                />
+
+                            </div>
+
+
+                            {/* PRICE */}
+
+                            <div className="mb-4">
+
+                                <label className="form-label">
+                                    Price
+                                </label>
+
+                                <input
+                                    type="number"
+                                    className="form-control"
+                                    name="price"
+                                    value={editForm.price}
+                                    onChange={handleEditChange}
+                                    min="0"
+                                    step="0.01"
+                                    required
+                                />
+
+                            </div>
+
+
+                            {/* BUTTONS */}
+
+                            <button className="btn-add me-2">
+
+                                <FaEdit className="me-2" />
+
+                                Update Plan
+
+                            </button>
+
+
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={cancelEdit}
+                            >
+
+                                Cancel
+
+                            </button>
 
                         </form>
 

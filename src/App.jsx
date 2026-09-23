@@ -10,22 +10,16 @@ import Payments from "./pages/Payments";
 import ProtectedRoute from "./components/ProtectedRoute";
 
 function App() {
+    const role = localStorage.getItem("role");
+
     return (
         <BrowserRouter>
             <Routes>
 
-                {/* Login */}
-                <Route
-                    path="/"
-                    element={<Login />}
-                />
-                {/* Register */}
-                <Route
-                    path="/register"
-                    element={<Register />}
-                />
+                <Route path="/" element={<Login />} />
 
-                {/* Dashboard */}
+                <Route path="/register" element={<Register />} />
+
                 <Route
                     path="/dashboard"
                     element={
@@ -35,7 +29,6 @@ function App() {
                     }
                 />
 
-                {/* Members */}
                 <Route
                     path="/members"
                     element={
@@ -45,20 +38,20 @@ function App() {
                     }
                 />
 
+                {/* Membership Plans - Admin only */}
                 <Route
-    path="/plans"
-    element={
-        localStorage.getItem("role") === "Admin"
-            ? (
-                <ProtectedRoute>
-                    <MembershipPlans />
-                </ProtectedRoute>
-            )
-            : <Navigate to="/dashboard" />
-    }
-/>
+                    path="/plans"
+                    element={
+                        role === "Admin" ? (
+                            <ProtectedRoute>
+                                <MembershipPlans />
+                            </ProtectedRoute>
+                        ) : (
+                            <Navigate to="/dashboard" />
+                        )
+                    }
+                />
 
-                {/* Memberships */}
                 <Route
                     path="/memberships"
                     element={
@@ -68,7 +61,6 @@ function App() {
                     }
                 />
 
-                {/* Payments */}
                 <Route
                     path="/payments"
                     element={
@@ -78,7 +70,6 @@ function App() {
                     }
                 />
 
-                {/* Unknown routes */}
                 <Route
                     path="*"
                     element={<Navigate to="/" />}
