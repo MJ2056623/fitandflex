@@ -18,27 +18,23 @@ export default function Memberships() {
     const statusFilter = searchParams.get("status");
 
     const emptyMembership = {
-        memberID: "",
-        planID: "",
-        startDate: "",
-        endDate: "",
-        status: "Active"
-    };
+    memberID: "",
+    planID: "",
+    startDate: null,
+    endDate: null,
+    status: "Active"
+};
 
     const [memberships, setMemberships] = useState([]);
     const [members, setMembers] = useState([]);
     const [plans, setPlans] = useState([]);
 
     // CREATE FORM
-    const [form, setForm] = useState({
-        memberID: "",
-        planID: ""
-    });
+   const [form, setForm] = useState(emptyMembership);
 
-    // EDIT FORM
-    const [editForm, setEditForm] = useState(emptyMembership);
+const [editForm, setEditForm] = useState(emptyMembership);
 
-    const [editingId, setEditingId] = useState(null);
+const [editingId, setEditingId] = useState(null);
 
     useEffect(() => {
         loadData();
@@ -109,104 +105,115 @@ export default function Memberships() {
     // CREATE MEMBERSHIP
     async function saveMembership(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
+    try {
 
-            const payload = {
-                memberID: Number(form.memberID),
-                planID: Number(form.planID)
-            };
+        const payload = {
+            memberID: Number(form.memberID),
+            planID: Number(form.planID),
+            startDate: form.startDate,
+            endDate: form.endDate,
+            status: form.status
+        };
 
-            await api.post(
-                "/Memberships",
-                payload
-            );
+        await api.post("/Memberships", payload);
 
-            setForm({
-                memberID: "",
-                planID: ""
-            });
+        resetForm();
 
-            await loadData();
+        await loadData();
 
+    }
+    catch (err) {
+
+        console.log(err);
+
+        if (err.response) {
+            alert(JSON.stringify(err.response.data));
         }
-        catch (err) {
-
-            console.log(err);
-
-            if (err.response)
-                alert(JSON.stringify(err.response.data));
-            else
-                alert(err.message);
-
+        else {
+            alert(err.message);
         }
 
     }
+
+}
 
     // OPEN EDIT FORM
     function editMembership(item) {
 
-        setEditingId(item.membershipID);
+    setEditingId(item.membershipID);
 
-        setEditForm({
-            memberID: item.memberID || "",
-            planID: item.planID || "",
-            startDate: item.startDate
-                ? item.startDate.substring(0, 10)
-                : "",
-            endDate: item.endDate
-                ? item.endDate.substring(0, 10)
-                : "",
-            status: item.status || "Active"
-        });
+    setEditForm({
+        memberID: item.memberID || "",
+        planID: item.planID || "",
+        startDate: item.startDate
+            ? item.startDate.substring(0, 10)
+            : "",
+        endDate: item.endDate
+            ? item.endDate.substring(0, 10)
+            : "",
+        status: item.status || "Active"
+    });
 
-    }
+    function handleEditChange(e) {
+
+    const { name, value } = e.target;
+
+    setEditForm({
+        ...editForm,
+        [name]: value
+    });
+
+}
+
+}
 
     // UPDATE MEMBERSHIP
     async function updateMembership(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
+    try {
 
-            const payload = {
-                memberID: Number(editForm.memberID),
-                planID: Number(editForm.planID),
-                startDate: editForm.startDate,
-                endDate: editForm.endDate,
-                status: editForm.status
-            };
+        const payload = {
+            memberID: Number(editForm.memberID),
+            planID: Number(editForm.planID),
+            startDate: editForm.startDate,
+            endDate: editForm.endDate,
+            status: editForm.status
+        };
 
-            await api.put(
-                `/Memberships/${editingId}`,
-                payload
-            );
+        await api.put(
+            `/Memberships/${editingId}`,
+            payload
+        );
 
-            cancelEdit();
+        cancelEdit();
 
-            await loadData();
+        await loadData();
 
+    }
+    catch (err) {
+
+        console.log(err);
+
+        if (err.response) {
+            alert(JSON.stringify(err.response.data));
         }
-        catch (err) {
-
-            console.log(err);
-
-            if (err.response)
-                alert(JSON.stringify(err.response.data));
-            else
-                alert(err.message);
-
+        else {
+            alert(err.message);
         }
 
     }
 
+}
     function cancelEdit() {
 
-        setEditingId(null);
-        setEditForm(emptyMembership);
+    setEditingId(null);
+    setEditForm(emptyMembership);
 
-    }
+}
 
     async function deleteMembership(id) {
 
@@ -684,226 +691,229 @@ export default function Memberships() {
 
 
             {/* =========================
-                SEPARATE EDIT MEMBERSHIP FORM
-            ========================== */}
+    EDIT MEMBERSHIP
+========================= */}
 
-            {editingId !== null && (
+{editingId !== null && (
 
-                <div
-                    style={{
-                        position: "fixed",
-                        inset: 0,
-                        backgroundColor: "rgba(0,0,0,0.5)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        zIndex: 1050,
-                        padding: "20px"
-                    }}
-                >
+    <div
+        style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1050,
+            padding: "20px"
+        }}
+    >
 
-                    <div
-                        className="page-card"
-                        style={{
-                            width: "100%",
-                            maxWidth: "800px",
-                            maxHeight: "90vh",
-                            overflowY: "auto",
-                            backgroundColor: "#fff"
-                        }}
-                    >
+        <div
+            className="card shadow"
+            style={{
+                width: "100%",
+                maxWidth: "550px",
+                maxHeight: "90vh",
+                overflowY: "auto",
+                backgroundColor: "#fff",
+                borderRadius: "15px"
+            }}
+        >
 
-                        <div className="card-header-custom">
+            <div className="card-body">
 
-                            <h4>
+                <h4 className="mb-4">
 
-                                <FaEdit className="me-2" />
+                    <FaEdit className="me-2" />
 
-                                Edit Membership
+                    Edit Membership
 
-                            </h4>
+                </h4>
 
-                        </div>
 
+                <form onSubmit={updateMembership}>
 
-                        <form onSubmit={updateMembership}>
+                    {/* MEMBER */}
 
-                            <div className="row">
+                    <div className="mb-3">
 
-                                <div className="col-md-6 mb-3">
+                        <label className="form-label">
+                            Member
+                        </label>
 
-                                    <label className="form-label">
+                        <select
+                            className="form-select"
+                            name="memberID"
+                            value={editForm.memberID}
+                            onChange={handleEditChange}
+                            required
+                        >
 
-                                        Member
+                            <option value="">
+                                Select Member
+                            </option>
 
-                                    </label>
+                            {members.map(member => (
 
-                                    <select
-                                        className="form-select"
-                                        name="memberID"
-                                        value={editForm.memberID}
-                                        onChange={handleEditChange}
-                                        required
-                                    >
+                                <option
+                                    key={member.memberID}
+                                    value={member.memberID}
+                                >
 
-                                        <option value="">
-                                            Select Member
-                                        </option>
+                                    {member.firstName}{" "}
+                                    {member.lastName}
 
-                                        {members.map(member => (
+                                </option>
 
-                                            <option
-                                                key={member.memberID}
-                                                value={member.memberID}
-                                            >
+                            ))}
 
-                                                {member.firstName}{" "}
-                                                {member.lastName}
-
-                                            </option>
-
-                                        ))}
-
-                                    </select>
-
-                                </div>
-
-
-                                <div className="col-md-6 mb-3">
-
-                                    <label className="form-label">
-
-                                        Membership Plan
-
-                                    </label>
-
-                                    <select
-                                        className="form-select"
-                                        name="planID"
-                                        value={editForm.planID}
-                                        onChange={handleEditChange}
-                                        required
-                                    >
-
-                                        <option value="">
-                                            Select Plan
-                                        </option>
-
-                                        {plans.map(plan => (
-
-                                            <option
-                                                key={plan.planID}
-                                                value={plan.planID}
-                                            >
-
-                                                {plan.planName}
-
-                                            </option>
-
-                                        ))}
-
-                                    </select>
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <label className="form-label">
-
-                                        Start Date
-
-                                    </label>
-
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        name="startDate"
-                                        value={editForm.startDate}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <label className="form-label">
-
-                                        End Date
-
-                                    </label>
-
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        name="endDate"
-                                        value={editForm.endDate}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <label className="form-label">
-
-                                        Status
-
-                                    </label>
-
-                                    <select
-                                        className="form-select"
-                                        name="status"
-                                        value={editForm.status}
-                                        onChange={handleEditChange}
-                                        required
-                                    >
-
-                                        <option value="Active">
-                                            Active
-                                        </option>
-
-                                        <option value="Expired">
-                                            Expired
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-                            </div>
-
-
-                            <button className="btn-add me-2">
-
-                                <FaEdit className="me-2" />
-
-                                Update Membership
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={cancelEdit}
-                            >
-
-                                Cancel
-
-                            </button>
-
-                        </form>
+                        </select>
 
                     </div>
 
-                </div>
 
-            )}
+                    {/* PLAN */}
+
+                    <div className="mb-3">
+
+                        <label className="form-label">
+                            Membership Plan
+                        </label>
+
+                        <select
+                            className="form-select"
+                            name="planID"
+                            value={editForm.planID}
+                            onChange={handleEditChange}
+                            required
+                        >
+
+                            <option value="">
+                                Select Plan
+                            </option>
+
+                            {plans.map(plan => (
+
+                                <option
+                                    key={plan.planID}
+                                    value={plan.planID}
+                                >
+
+                                    {plan.planName}
+
+                                </option>
+
+                            ))}
+
+                        </select>
+
+                    </div>
+
+
+                    {/* START DATE */}
+
+                    <div className="mb-3">
+
+                        <label className="form-label">
+                            Start Date
+                        </label>
+
+                        <input
+                            type="date"
+                            className="form-control"
+                            name="startDate"
+                            value={editForm.startDate || ""}
+                            onChange={handleEditChange}
+                            required
+                        />
+
+                    </div>
+
+
+                    {/* END DATE */}
+
+                    <div className="mb-3">
+
+                        <label className="form-label">
+                            End Date
+                        </label>
+
+                        <input
+                            type="date"
+                            className="form-control"
+                            name="endDate"
+                            value={editForm.endDate || ""}
+                            onChange={handleEditChange}
+                        />
+
+                    </div>
+
+
+                    {/* STATUS */}
+
+                    <div className="mb-4">
+
+                        <label className="form-label">
+                            Status
+                        </label>
+
+                        <select
+                            className="form-select"
+                            name="status"
+                            value={editForm.status}
+                            onChange={handleEditChange}
+                            required
+                        >
+
+                            <option value="Active">
+                                Active
+                            </option>
+
+                            <option value="Inactive">
+                                Inactive
+                            </option>
+
+                            <option value="Expired">
+                                Expired
+                            </option>
+
+                        </select>
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        className="btn-add me-2"
+                    >
+
+                        <FaEdit className="me-2" />
+
+                        Update Membership
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={cancelEdit}
+                    >
+
+                        Cancel
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+)}
 
         </DashboardLayout>
 

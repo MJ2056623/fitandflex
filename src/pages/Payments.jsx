@@ -728,155 +728,146 @@ export default function Payments() {
 
 
             {/* =========================
-                SEPARATE EDIT PAYMENT FORM
-            ========================== */}
+    EDIT PAYMENT
+========================= */}
 
-            {editingId !== null && (
+{editingId !== null && (
 
-                <div
-                    style={{
-                        position: "fixed",
-                        inset: 0,
-                        backgroundColor: "rgba(0,0,0,0.5)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        zIndex: 1050,
-                        padding: "20px"
-                    }}
-                >
+    <div
+        style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1050,
+            padding: "20px"
+        }}
+    >
 
-                    <div
-                        className="page-card"
-                        style={{
-                            width: "100%",
-                            maxWidth: "700px",
-                            backgroundColor: "#fff"
-                        }}
-                    >
+        <div
+            className="card shadow"
+            style={{
+                width: "100%",
+                maxWidth: "550px",
+                maxHeight: "90vh",
+                overflowY: "auto",
+                backgroundColor: "#fff",
+                borderRadius: "15px"
+            }}
+        >
 
-                        <div className="card-header-custom">
+            <div className="card-body">
 
-                            <h4>
+                <h4 className="mb-4">
 
-                                <FaEdit className="me-2" />
+                    <FaEdit className="me-2" />
 
-                                Edit Payment
+                    Edit Payment
 
-                            </h4>
-
-                        </div>
-
-
-                        <form onSubmit={updatePayment}>
-
-                            <div className="row">
-
-                                {/* MEMBER */}
-
-                                <div className="col-md-6 mb-3">
-
-                                    <label className="form-label">
-
-                                        Member
-
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        value={
-
-                                            editingPayment?.member
-
-                                                ? `${editingPayment.member.firstName} ${editingPayment.member.lastName}`
-
-                                                : editForm.memberID
-
-                                        }
-                                        readOnly
-                                    />
-
-                                </div>
+                </h4>
 
 
-                                {/* MEMBERSHIP */}
+                <form onSubmit={updatePayment}>
 
-                                <div className="col-md-6 mb-3">
+                    {/* MEMBER */}
 
-                                    <label className="form-label">
+                    <div className="mb-3">
 
-                                        Membership
+                        <label className="form-label">
+                            Member
+                        </label>
 
-                                    </label>
-
-                                    <input
-                                        type="text"
-                                        className="form-control"
-                                        value={
-
-                                            editingPayment?.membership
-                                                ?.plan || ""
-
-                                        }
-                                        readOnly
-                                    />
-
-                                </div>
-
-
-                                {/* AMOUNT */}
-
-                                <div className="col-md-12 mb-3">
-
-                                    <label className="form-label">
-
-                                        Amount
-
-                                    </label>
-
-                                    <input
-                                        type="number"
-                                        className="form-control"
-                                        name="amount"
-                                        value={editForm.amount}
-                                        onChange={handleEditChange}
-                                        min="0"
-                                        step="0.01"
-                                        required
-                                    />
-
-                                </div>
-
-                            </div>
-
-
-                            <button className="btn-add me-2">
-
-                                <FaEdit className="me-2" />
-
-                                Update Payment
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={cancelEdit}
-                            >
-
-                                Cancel
-
-                            </button>
-
-                        </form>
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={
+                                editForm.memberID
+                                    ? `${editForm.memberID}`
+                                    : ""
+                            }
+                            readOnly
+                        />
 
                     </div>
 
-                </div>
 
-            )}
+                    {/* MEMBERSHIP */}
+
+                    <div className="mb-3">
+
+                        <label className="form-label">
+                            Membership
+                        </label>
+
+                        <input
+                            type="text"
+                            className="form-control"
+                            value={
+                                editForm.membershipID
+                                    ? `${editForm.membershipID}`
+                                    : ""
+                            }
+                            readOnly
+                        />
+
+                    </div>
+
+
+                    {/* AMOUNT */}
+
+                    <div className="mb-4">
+
+                        <label className="form-label">
+                            Amount
+                        </label>
+
+                        <input
+                            type="number"
+                            className="form-control"
+                            name="amount"
+                            value={editForm.amount}
+                            onChange={handleEditChange}
+                            min="0"
+                            step="0.01"
+                            required
+                        />
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        className="btn-add me-2"
+                    >
+
+                        <FaEdit className="me-2" />
+
+                        Update Payment
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={cancelEdit}
+                    >
+
+                        Cancel
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+)}
 
         </DashboardLayout>
 

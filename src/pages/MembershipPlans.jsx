@@ -16,10 +16,10 @@ export default function MembershipPlans() {
     const role = localStorage.getItem("role");
 
     const emptyPlan = {
-        planName: "",
-        durationMonths: "",
-        price: ""
-    };
+    planName: "",
+    durationMonths: "",
+    price: 0
+};
 
     const [plans, setPlans] = useState([]);
     const [search, setSearch] = useState("");
@@ -69,100 +69,152 @@ export default function MembershipPlans() {
 
     async function savePlan(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
+    try {
 
-            await api.post("/MembershipPlans", {
-                planName: form.planName,
-                durationMonths: Number(form.durationMonths),
-                price: Number(form.price)
-            });
+        const payload = {
+            planName: form.planName,
+            durationMonths: Number(form.durationMonths),
+            price: Number(form.price)
+        };
 
-            setForm(emptyPlan);
+        await api.post("/MembershipPlans", payload);
 
-            await loadPlans();
+        setForm(emptyPlan);
 
-        } catch (err) {
+        await loadPlans();
 
-            console.log(err);
+    }
+    catch (err) {
 
-            if (err.response) {
-                alert(err.response.data);
-            } else {
-                alert("Unable to add membership plan.");
-            }
+        console.log(err);
+
+        if (err.response) {
+
+            const message =
+                typeof err.response.data === "string"
+                    ? err.response.data
+                    : "Unable to add membership plan.";
+
+            alert(message);
+
+        }
+        else {
+
+            alert("Unable to add membership plan.");
 
         }
 
     }
+
+}
 
     // =========================
     // EDIT FORM
     // =========================
 
-    function handleEditChange(e) {
-
-        const { name, value } = e.target;
-
-        setEditForm({
-            ...editForm,
-            [name]: value
-        });
-
-    }
-
     function editPlan(plan) {
 
-        setEditingId(plan.membershipPlanID);
+    setEditingId(plan.planID);
 
-        setEditForm({
-            planName: plan.planName || "",
-            durationMonths: plan.durationMonths || "",
-            price: plan.price || ""
-        });
+    setEditForm({
+        planName: plan.planName || "",
+        durationMonths: plan.durationMonths || "",
+        price: plan.price || 0
+    });
+
+}
+
+    function handleEditChange(e) {
+
+    const { name, value } = e.target;
+
+    const updated = {
+        ...editForm,
+        [name]: value
+    };
+
+    if (name === "planName") {
+
+        if (value === "Walk-in") {
+            updated.durationMonths = 0;
+            updated.price = 100;
+        }
 
     }
+
+    if (name === "durationMonths") {
+
+        if (
+            editForm.planName === "Monthly" ||
+            editForm.planName === "Yearly"
+        ) {
+            updated.price = Number(value) * 3000;
+        }
+
+        if (editForm.planName === "Walk-in") {
+            updated.price = 100;
+        }
+
+    }
+
+    setEditForm(updated);
+
+}
 
     async function updatePlan(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        try {
+    try {
 
-            await api.put(
-                `/MembershipPlans/${editingId}`,
-                {
-                    planName: editForm.planName,
-                    durationMonths: Number(editForm.durationMonths),
-                    price: Number(editForm.price)
-                }
-            );
+        const payload = {
+            planName: editForm.planName,
+            durationMonths: Number(editForm.durationMonths),
+            price: Number(editForm.price)
+        };
 
-            cancelEdit();
+        await api.put(
+            `/MembershipPlans/${editingId}`,
+            payload
+        );
 
-            await loadPlans();
+        cancelEdit();
 
-        } catch (err) {
+        await loadPlans();
 
-            console.log(err);
+    }
+    catch (err) {
 
-            if (err.response) {
-                alert(err.response.data);
-            } else {
-                alert("Unable to update membership plan.");
-            }
+        console.log(err);
+
+        if (err.response) {
+
+            const message =
+                typeof err.response.data === "string"
+                    ? err.response.data
+                    : "Unable to update membership plan.";
+
+            alert(message);
+
+        }
+        else {
+
+            alert("Unable to update membership plan.");
 
         }
 
     }
 
+}
+
     function cancelEdit() {
 
-        setEditingId(null);
-        setEditForm(emptyPlan);
+    setEditingId(null);
+    setEditForm(emptyPlan);
 
-    }
+}
 
     // =========================
     // DELETE
@@ -449,142 +501,161 @@ export default function MembershipPlans() {
 
             </div>
 
-
             {/* =========================
-                VERTICAL EDIT PLAN FORM
-            ========================== */}
+    EDIT MEMBERSHIP PLAN
+========================= */}
 
-            {editingId !== null && (
+{editingId !== null && (
 
-                <div
-                    style={{
-                        position: "fixed",
-                        inset: 0,
-                        backgroundColor: "rgba(0,0,0,0.5)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        zIndex: 1050,
-                        padding: "20px"
-                    }}
-                >
+    <div
+        style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1050,
+            padding: "20px"
+        }}
+    >
 
-                    <div
-                        className="dashboard-panel"
-                        style={{
-                            width: "100%",
-                            maxWidth: "550px",
-                            maxHeight: "90vh",
-                            overflowY: "auto",
-                            backgroundColor: "#fff"
-                        }}
-                    >
+        <div
+            className="card shadow"
+            style={{
+                width: "100%",
+                maxWidth: "550px",
+                maxHeight: "90vh",
+                overflowY: "auto",
+                backgroundColor: "#fff",
+                borderRadius: "15px"
+            }}
+        >
 
-                        <div className="panel-title">
+            <div className="card-body">
 
-                            <span>
+                <h4 className="mb-4">
 
-                                <FaEdit className="me-2" />
+                    <FaEdit className="me-2" />
 
-                                Edit Membership Plan
+                    Edit Membership Plan
 
-                            </span>
-
-                        </div>
-
-
-                        <form onSubmit={updatePlan}>
-
-                            {/* PLAN NAME */}
-
-                            <div className="mb-3">
-
-                                <label className="form-label">
-                                    Plan Name
-                                </label>
-
-                                <input
-                                    className="form-control"
-                                    name="planName"
-                                    value={editForm.planName}
-                                    onChange={handleEditChange}
-                                    required
-                                />
-
-                            </div>
+                </h4>
 
 
-                            {/* DURATION */}
+                <form onSubmit={updatePlan}>
 
-                            <div className="mb-3">
+                    {/* PLAN NAME */}
 
-                                <label className="form-label">
-                                    Duration in Months
-                                </label>
+                    <div className="mb-3">
 
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    name="durationMonths"
-                                    value={editForm.durationMonths}
-                                    onChange={handleEditChange}
-                                    min="1"
-                                    required
-                                />
+                        <label className="form-label">
+                            Membership Type
+                        </label>
 
-                            </div>
+                        <select
+                            className="form-select"
+                            name="planName"
+                            value={editForm.planName}
+                            onChange={handleEditChange}
+                            required
+                        >
 
+                            <option value="">
+                                Select Membership Type
+                            </option>
 
-                            {/* PRICE */}
+                            <option value="Monthly">
+                                Monthly
+                            </option>
 
-                            <div className="mb-4">
+                            <option value="Yearly">
+                                Yearly
+                            </option>
 
-                                <label className="form-label">
-                                    Price
-                                </label>
+                            <option value="Walk-in">
+                                Walk-in
+                            </option>
 
-                                <input
-                                    type="number"
-                                    className="form-control"
-                                    name="price"
-                                    value={editForm.price}
-                                    onChange={handleEditChange}
-                                    min="0"
-                                    step="0.01"
-                                    required
-                                />
-
-                            </div>
-
-
-                            {/* BUTTONS */}
-
-                            <button className="btn-add me-2">
-
-                                <FaEdit className="me-2" />
-
-                                Update Plan
-
-                            </button>
-
-
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={cancelEdit}
-                            >
-
-                                Cancel
-
-                            </button>
-
-                        </form>
+                        </select>
 
                     </div>
 
-                </div>
 
-            )}
+                    {/* DURATION */}
+
+                    <div className="mb-3">
+
+                        <label className="form-label">
+                            Duration (Months)
+                        </label>
+
+                        <input
+                            type="number"
+                            className="form-control"
+                            name="durationMonths"
+                            value={editForm.durationMonths}
+                            onChange={handleEditChange}
+                            min="0"
+                            required
+                        />
+
+                    </div>
+
+
+                    {/* PRICE */}
+
+                    <div className="mb-4">
+
+                        <label className="form-label">
+                            Price
+                        </label>
+
+                        <input
+                            type="number"
+                            className="form-control"
+                            name="price"
+                            value={editForm.price}
+                            onChange={handleEditChange}
+                            min="0"
+                            step="0.01"
+                            required
+                        />
+
+                    </div>
+
+
+                    <button
+                        type="submit"
+                        className="btn-add me-2"
+                    >
+
+                        <FaEdit className="me-2" />
+
+                        Update Plan
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={cancelEdit}
+                    >
+
+                        Cancel
+
+                    </button>
+
+                </form>
+
+            </div>
+
+        </div>
+
+    </div>
+
+)}
 
         </DashboardLayout>
 

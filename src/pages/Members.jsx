@@ -534,11 +534,15 @@ export default function Members() {
 
                                     <td>
 
-                                        <span className="badge success">
-
-                                            {member.status}
-
-                                        </span>
+                                        <span
+    className={`badge ${
+        String(member.status).toLowerCase() === "active"
+            ? "bg-success"
+            : "bg-secondary"
+    }`}
+>
+    {member.status}
+</span>
 
                                     </td>
 
@@ -592,199 +596,250 @@ export default function Members() {
 
 
             {/* =========================
-                SEPARATE EDIT MEMBER FORM
-            ========================== */}
+    SEPARATE EDIT MEMBER FORM
+========================== */}
 
-            {editingId !== null && (
+{editingId !== null && (
 
-                <div
-                    style={{
-                        position: "fixed",
-                        inset: 0,
-                        backgroundColor: "rgba(0,0,0,0.5)",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        zIndex: 1050,
-                        padding: "20px"
-                    }}
-                >
+    <div
+        style={{
+            position: "fixed",
+            inset: 0,
+            backgroundColor: "rgba(0,0,0,0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1050,
+            padding: "20px"
+        }}
+    >
 
-                    <div
-                        className="dashboard-panel"
-                        style={{
-                            width: "100%",
-                            maxWidth: "900px",
-                            maxHeight: "90vh",
-                            overflowY: "auto",
-                            backgroundColor: "#fff"
-                        }}
-                    >
+        <div
+            className="dashboard-panel"
+            style={{
+                width: "100%",
+                maxWidth: "550px",
+                maxHeight: "90vh",
+                overflowY: "auto",
+                backgroundColor: "#fff"
+            }}
+        >
 
-                        <div className="panel-title">
+            {/* HEADER */}
 
-                            <span>
+            <div className="panel-title">
 
-                                <FaEdit className="me-2" />
+                <span>
 
-                                Edit Member
+                    <FaEdit className="me-2" />
 
-                            </span>
+                    Edit Member
 
-                        </div>
+                </span>
 
-
-                        <form onSubmit={updateMember}>
-
-                            <div className="row">
-
-                                <div className="col-md-4 mb-3">
-
-                                    <input
-                                        className="form-control"
-                                        placeholder="First Name"
-                                        name="firstName"
-                                        value={editForm.firstName}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
+            </div>
 
 
-                                <div className="col-md-4 mb-3">
+            {/* EDIT FORM */}
 
-                                    <input
-                                        className="form-control"
-                                        placeholder="Last Name"
-                                        name="lastName"
-                                        value={editForm.lastName}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
+            <form onSubmit={updateMember}>
 
-                                </div>
+                {/* FIRST NAME */}
 
+                <div className="mb-3">
 
-                                <div className="col-md-4 mb-3">
+                    <label className="form-label">
+                        First Name
+                    </label>
 
-                                    <select
-                                        className="form-select"
-                                        name="gender"
-                                        value={editForm.gender}
-                                        onChange={handleEditChange}
-                                        required
-                                    >
-
-                                        <option value="">
-                                            Select Gender
-                                        </option>
-
-                                        <option value="Male">
-                                            Male
-                                        </option>
-
-                                        <option value="Female">
-                                            Female
-                                        </option>
-
-                                    </select>
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <input
-                                        type="date"
-                                        className="form-control"
-                                        name="birthDate"
-                                        value={editForm.birthDate}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <input
-                                        type="tel"
-                                        className="form-control"
-                                        placeholder="09XXXXXXXXX"
-                                        name="phone"
-                                        value={editForm.phone}
-                                        onChange={handleEditChange}
-                                        maxLength="11"
-                                        pattern="09[0-9]{9}"
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-4 mb-3">
-
-                                    <input
-                                        type="email"
-                                        className="form-control"
-                                        placeholder="Email Address"
-                                        name="email"
-                                        value={editForm.email}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-12 mb-4">
-
-                                    <input
-                                        className="form-control"
-                                        placeholder="Complete Address"
-                                        name="address"
-                                        value={editForm.address}
-                                        onChange={handleEditChange}
-                                        required
-                                    />
-
-                                </div>
-
-
-                                <div className="col-md-12">
-
-                                    <button className="btn-add me-2">
-
-                                        <FaEdit className="me-2" />
-
-                                        Update Member
-
-                                    </button>
-
-
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={cancelEdit}
-                                    >
-
-                                        Cancel
-
-                                    </button>
-
-                                </div>
-
-                            </div>
-
-                        </form>
-
-                    </div>
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="First Name"
+                        name="firstName"
+                        value={editForm.firstName}
+                        onChange={handleEditChange}
+                        required
+                    />
 
                 </div>
 
-            )}
+
+                {/* LAST NAME */}
+
+                <div className="mb-3">
+
+                    <label className="form-label">
+                        Last Name
+                    </label>
+
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Last Name"
+                        name="lastName"
+                        value={editForm.lastName}
+                        onChange={handleEditChange}
+                        required
+                    />
+
+                </div>
+
+
+                {/* GENDER */}
+
+                <div className="mb-3">
+
+                    <label className="form-label">
+                        Gender
+                    </label>
+
+                    <select
+                        className="form-select"
+                        name="gender"
+                        value={editForm.gender}
+                        onChange={handleEditChange}
+                        required
+                    >
+
+                        <option value="">
+                            Select Gender
+                        </option>
+
+                        <option value="Male">
+                            Male
+                        </option>
+
+                        <option value="Female">
+                            Female
+                        </option>
+
+                    </select>
+
+                </div>
+
+
+                {/* BIRTH DATE */}
+
+                <div className="mb-3">
+
+                    <label className="form-label">
+                        Birth Date
+                    </label>
+
+                    <input
+                        type="date"
+                        className="form-control"
+                        name="birthDate"
+                        value={editForm.birthDate}
+                        onChange={handleEditChange}
+                        required
+                    />
+
+                </div>
+
+
+                {/* PHONE */}
+
+                <div className="mb-3">
+
+                    <label className="form-label">
+                        Phone Number
+                    </label>
+
+                    <input
+                        type="tel"
+                        className="form-control"
+                        placeholder="09XXXXXXXXX"
+                        name="phone"
+                        value={editForm.phone}
+                        onChange={handleEditChange}
+                        maxLength="11"
+                        pattern="09[0-9]{9}"
+                        title="Phone number must contain exactly 11 digits and start with 09."
+                        required
+                    />
+
+                </div>
+
+
+                {/* EMAIL */}
+
+                <div className="mb-3">
+
+                    <label className="form-label">
+                        Email Address
+                    </label>
+
+                    <input
+                        type="email"
+                        className="form-control"
+                        placeholder="Email Address"
+                        name="email"
+                        value={editForm.email}
+                        onChange={handleEditChange}
+                        required
+                    />
+
+                </div>
+
+
+                {/* ADDRESS */}
+
+                <div className="mb-4">
+
+                    <label className="form-label">
+                        Complete Address
+                    </label>
+
+                    <input
+                        type="text"
+                        className="form-control"
+                        placeholder="Complete Address"
+                        name="address"
+                        value={editForm.address}
+                        onChange={handleEditChange}
+                        required
+                    />
+
+                </div>
+
+
+                {/* BUTTONS */}
+
+                <div>
+
+                    <button
+                        type="submit"
+                        className="btn-add me-2"
+                    >
+
+                        <FaEdit className="me-2" />
+
+                        Update Member
+
+                    </button>
+
+
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={cancelEdit}
+                    >
+
+                        Cancel
+
+                    </button>
+
+                </div>
+
+            </form>
+
+        </div>
+
+    </div>
+
+)}
 
         </DashboardLayout>
 
