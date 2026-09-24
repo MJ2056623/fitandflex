@@ -17,7 +17,9 @@ export default function MembershipPlans() {
     const [plans, setPlans] = useState([]);
     const [search, setSearch] = useState("");
 
-    const [editingId, setEditingId] = useState(null);
+    // ==========================================
+    // ADD FORM
+    // ==========================================
 
     const emptyForm = {
         planName: "",
@@ -26,6 +28,20 @@ export default function MembershipPlans() {
     };
 
     const [form, setForm] = useState(emptyForm);
+
+    // ==========================================
+    // EDIT FORM
+    // ==========================================
+
+    const emptyEditForm = {
+        planName: "",
+        durationMonths: "",
+        price: ""
+    };
+
+    const [editingId, setEditingId] = useState(null);
+
+    const [editForm, setEditForm] = useState(emptyEditForm);
 
     // ==========================================
     // LOAD PLANS
@@ -55,7 +71,7 @@ export default function MembershipPlans() {
     }
 
     // ==========================================
-    // DEFAULT PRICING
+    // DEFAULT PRICE
     // ==========================================
 
     function getDefaultPrice(planName, durationMonths) {
@@ -74,7 +90,9 @@ export default function MembershipPlans() {
         ) {
 
             if (!duration || duration <= 0) {
+
                 return "";
+
             }
 
             return duration * 3000;
@@ -86,25 +104,26 @@ export default function MembershipPlans() {
     }
 
     // ==========================================
-    // HANDLE FORM CHANGE
+    // ADD FORM CHANGE
     // ==========================================
 
     function handleChange(e) {
 
         const { name, value } = e.target;
 
-        // ======================================
-        // PLAN NAME CHANGED
-        // ======================================
-
+        // PLAN NAME
         if (name === "planName") {
 
             if (value === "Walk-in") {
 
                 setForm({
+
                     planName: "Walk-in",
+
                     durationMonths: "0",
+
                     price: 100
+
                 });
 
                 return;
@@ -112,65 +131,70 @@ export default function MembershipPlans() {
             }
 
             setForm({
+
                 planName: value,
+
                 durationMonths: "",
+
                 price: ""
+
             });
 
             return;
 
         }
 
-        // ======================================
-        // DURATION CHANGED
-        // ======================================
-
+        // DURATION
         if (name === "durationMonths") {
 
-            const automaticPrice = getDefaultPrice(
-                form.planName,
-                value
-            );
+            const automaticPrice =
+                getDefaultPrice(
+                    form.planName,
+                    value
+                );
 
             setForm({
+
                 ...form,
+
                 durationMonths: value,
+
                 price: automaticPrice
+
             });
 
             return;
 
         }
 
-        // ======================================
-        // PRICE CHANGED
-        // ======================================
-
+        // PRICE
         if (name === "price") {
 
             setForm({
-                ...form,
-                price: value
-            });
 
-            return;
+                ...form,
+
+                price: value
+
+            });
 
         }
 
     }
 
     // ==========================================
-    // SAVE PLAN
+    // ADD PLAN
     // ==========================================
 
     async function savePlan(e) {
 
         e.preventDefault();
 
-        // Prevent invalid data
         if (!form.planName) {
 
-            alert("Please select a membership type.");
+            alert(
+                "Please select a membership type."
+            );
 
             return;
 
@@ -181,7 +205,9 @@ export default function MembershipPlans() {
             !form.durationMonths
         ) {
 
-            alert("Please select a duration.");
+            alert(
+                "Please select a duration."
+            );
 
             return;
 
@@ -192,7 +218,9 @@ export default function MembershipPlans() {
             Number(form.price) < 0
         ) {
 
-            alert("Please enter a valid price.");
+            alert(
+                "Please enter a valid price."
+            );
 
             return;
 
@@ -213,39 +241,16 @@ export default function MembershipPlans() {
 
             };
 
-            // ==================================
-            // ADD
-            // ==================================
-
-            if (editingId === null) {
-
-                await api.post(
-                    "/MembershipPlans",
-                    payload
-                );
-
-            }
-
-            // ==================================
-            // UPDATE
-            // ==================================
-
-            else {
-
-                await api.put(
-                    `/MembershipPlans/${editingId}`,
-                    payload
-                );
-
-            }
-
-            alert(
-                editingId === null
-                    ? "Membership plan added successfully."
-                    : "Membership plan updated successfully."
+            await api.post(
+                "/MembershipPlans",
+                payload
             );
 
-            resetForm();
+            alert(
+                "Membership plan added successfully."
+            );
+
+            resetAddForm();
 
             loadPlans();
 
@@ -259,7 +264,7 @@ export default function MembershipPlans() {
                 const message =
                     typeof err.response.data === "string"
                         ? err.response.data
-                        : "Unable to save membership plan.";
+                        : "Unable to add membership plan.";
 
                 alert(message);
 
@@ -267,7 +272,7 @@ export default function MembershipPlans() {
             else {
 
                 alert(
-                    "Unable to save membership plan."
+                    "Unable to add membership plan."
                 );
 
             }
@@ -277,14 +282,24 @@ export default function MembershipPlans() {
     }
 
     // ==========================================
-    // EDIT PLAN
+    // RESET ADD FORM
+    // ==========================================
+
+    function resetAddForm() {
+
+        setForm(emptyForm);
+
+    }
+
+    // ==========================================
+    // OPEN EDIT FORM
     // ==========================================
 
     function editPlan(plan) {
 
         setEditingId(plan.planID);
 
-        setForm({
+        setEditForm({
 
             planName: plan.planName,
 
@@ -293,11 +308,212 @@ export default function MembershipPlans() {
                     ? "0"
                     : String(plan.durationMonths),
 
-            // Keep the actual database price.
-            // Admin can modify it.
+            // Keep the existing database price.
+            // This allows the Admin to manually
+            // change the price.
             price: plan.price
 
         });
+
+    }
+
+    // ==========================================
+    // EDIT FORM CHANGE
+    // ==========================================
+
+    function handleEditChange(e) {
+
+        const { name, value } = e.target;
+
+        // PLAN NAME
+        if (name === "planName") {
+
+            if (value === "Walk-in") {
+
+                setEditForm({
+
+                    planName: "Walk-in",
+
+                    durationMonths: "0",
+
+                    price: 100
+
+                });
+
+                return;
+
+            }
+
+            // When changing the membership type,
+            // reset duration and calculate only
+            // after a duration is selected.
+
+            setEditForm({
+
+                planName: value,
+
+                durationMonths: "",
+
+                price: ""
+
+            });
+
+            return;
+
+        }
+
+        // DURATION
+        if (name === "durationMonths") {
+
+            const automaticPrice =
+                getDefaultPrice(
+                    editForm.planName,
+                    value
+                );
+
+            setEditForm({
+
+                ...editForm,
+
+                durationMonths: value,
+
+                price: automaticPrice
+
+            });
+
+            return;
+
+        }
+
+        // PRICE
+        if (name === "price") {
+
+            setEditForm({
+
+                ...editForm,
+
+                price: value
+
+            });
+
+        }
+
+    }
+
+    // ==========================================
+    // UPDATE PLAN
+    // ==========================================
+
+    async function updatePlan(e) {
+
+        e.preventDefault();
+
+        if (editingId === null) {
+
+            return;
+
+        }
+
+        if (!editForm.planName) {
+
+            alert(
+                "Please select a membership type."
+            );
+
+            return;
+
+        }
+
+        if (
+            editForm.planName !== "Walk-in" &&
+            !editForm.durationMonths
+        ) {
+
+            alert(
+                "Please select a duration."
+            );
+
+            return;
+
+        }
+
+        if (
+            editForm.price === "" ||
+            Number(editForm.price) < 0
+        ) {
+
+            alert(
+                "Please enter a valid price."
+            );
+
+            return;
+
+        }
+
+        try {
+
+            const payload = {
+
+                planName: editForm.planName,
+
+                durationMonths:
+                    editForm.planName === "Walk-in"
+                        ? 0
+                        : Number(editForm.durationMonths),
+
+                price: Number(editForm.price)
+
+            };
+
+            await api.put(
+                `/MembershipPlans/${editingId}`,
+                payload
+            );
+
+            alert(
+                "Membership plan updated successfully."
+            );
+
+            cancelEdit();
+
+            loadPlans();
+
+        }
+        catch (err) {
+
+            console.log(err);
+
+            if (err.response) {
+
+                const message =
+                    typeof err.response.data === "string"
+                        ? err.response.data
+                        : "Unable to update membership plan.";
+
+                alert(message);
+
+            }
+            else {
+
+                alert(
+                    "Unable to update membership plan."
+                );
+
+            }
+
+        }
+
+    }
+
+    // ==========================================
+    // CANCEL EDIT
+    // ==========================================
+
+    function cancelEdit() {
+
+        setEditingId(null);
+
+        setEditForm(emptyEditForm);
 
     }
 
@@ -333,18 +549,6 @@ export default function MembershipPlans() {
             );
 
         }
-
-    }
-
-    // ==========================================
-    // RESET FORM
-    // ==========================================
-
-    function resetForm() {
-
-        setEditingId(null);
-
-        setForm(emptyForm);
 
     }
 
@@ -400,7 +604,7 @@ export default function MembershipPlans() {
 
 
                 {/* =================================
-                    ADD / EDIT FORM
+                    ADD PLAN FORM
                 ================================= */}
 
                 <div className="card shadow-sm border-0 mb-4">
@@ -489,9 +693,6 @@ export default function MembershipPlans() {
 
                                             </option>
 
-
-                                            {/* MONTHLY */}
-
                                             {form.planName === "Monthly" && (
 
                                                 <>
@@ -546,9 +747,6 @@ export default function MembershipPlans() {
 
                                             )}
 
-
-                                            {/* YEARLY */}
-
                                             {form.planName === "Yearly" && (
 
                                                 <>
@@ -574,9 +772,6 @@ export default function MembershipPlans() {
                                                 </>
 
                                             )}
-
-
-                                            {/* WALK-IN */}
 
                                             {form.planName === "Walk-in" && (
 
@@ -626,48 +821,16 @@ export default function MembershipPlans() {
                                 </div>
 
 
-                                {/* BUTTONS */}
+                                <button
+                                    type="submit"
+                                    className="btn btn-dark"
+                                >
 
-                                <div className="d-flex gap-2">
+                                    <FaPlus className="me-2" />
 
-                                    <button
-                                        type="submit"
-                                        className="btn btn-dark"
-                                    >
+                                    Add Plan
 
-                                        {editingId === null
-                                            ? (
-                                                <>
-                                                    <FaPlus className="me-2" />
-                                                    Add Plan
-                                                </>
-                                            )
-                                            : (
-                                                <>
-                                                    <FaEdit className="me-2" />
-                                                    Update Plan
-                                                </>
-                                            )
-                                        }
-
-                                    </button>
-
-
-                                    {editingId !== null && (
-
-                                        <button
-                                            type="button"
-                                            className="btn btn-secondary"
-                                            onClick={resetForm}
-                                        >
-
-                                            Cancel
-
-                                        </button>
-
-                                    )}
-
-                                </div>
+                                </button>
 
                             </form>
 
@@ -676,6 +839,264 @@ export default function MembershipPlans() {
                     </div>
 
                 </div>
+
+
+                {/* =================================
+                    EDIT PLAN FORM
+                ================================= */}
+
+                {editingId !== null && role === "Admin" && (
+
+                    <div className="card shadow-sm border-0 mb-4">
+
+                        <div className="card-header bg-white">
+
+                            <h5 className="mb-0">
+
+                                <FaEdit className="me-2" />
+
+                                Edit Membership Plan
+
+                            </h5>
+
+                        </div>
+
+                        <div className="card-body">
+
+                            <form onSubmit={updatePlan}>
+
+                                {/* VERTICAL EDIT FORM */}
+
+                                <div className="mb-3">
+
+                                    <label className="form-label">
+
+                                        Membership Type
+
+                                    </label>
+
+                                    <select
+                                        className="form-select"
+                                        name="planName"
+                                        value={editForm.planName}
+                                        onChange={handleEditChange}
+                                        required
+                                    >
+
+                                        <option value="">
+
+                                            Select Membership
+
+                                        </option>
+
+                                        <option value="Monthly">
+
+                                            Monthly
+
+                                        </option>
+
+                                        <option value="Yearly">
+
+                                            Yearly
+
+                                        </option>
+
+                                        <option value="Walk-in">
+
+                                            Walk-in
+
+                                        </option>
+
+                                    </select>
+
+                                </div>
+
+
+                                <div className="mb-3">
+
+                                    <label className="form-label">
+
+                                        Duration
+
+                                    </label>
+
+                                    <select
+                                        className="form-select"
+                                        name="durationMonths"
+                                        value={editForm.durationMonths}
+                                        onChange={handleEditChange}
+                                        disabled={
+                                            editForm.planName === "Walk-in"
+                                        }
+                                        required={
+                                            editForm.planName !== "Walk-in"
+                                        }
+                                    >
+
+                                        <option value="">
+
+                                            Select Duration
+
+                                        </option>
+
+                                        {editForm.planName === "Monthly" && (
+
+                                            <>
+                                                <option value="1">
+                                                    1 Month
+                                                </option>
+
+                                                <option value="2">
+                                                    2 Months
+                                                </option>
+
+                                                <option value="3">
+                                                    3 Months
+                                                </option>
+
+                                                <option value="4">
+                                                    4 Months
+                                                </option>
+
+                                                <option value="5">
+                                                    5 Months
+                                                </option>
+
+                                                <option value="6">
+                                                    6 Months
+                                                </option>
+
+                                                <option value="7">
+                                                    7 Months
+                                                </option>
+
+                                                <option value="8">
+                                                    8 Months
+                                                </option>
+
+                                                <option value="9">
+                                                    9 Months
+                                                </option>
+
+                                                <option value="10">
+                                                    10 Months
+                                                </option>
+
+                                                <option value="11">
+                                                    11 Months
+                                                </option>
+
+                                                <option value="12">
+                                                    12 Months
+                                                </option>
+                                            </>
+
+                                        )}
+
+                                        {editForm.planName === "Yearly" && (
+
+                                            <>
+                                                <option value="12">
+                                                    12 Months
+                                                </option>
+
+                                                <option value="24">
+                                                    24 Months
+                                                </option>
+
+                                                <option value="36">
+                                                    36 Months
+                                                </option>
+
+                                                <option value="48">
+                                                    48 Months
+                                                </option>
+
+                                                <option value="60">
+                                                    60 Months
+                                                </option>
+                                            </>
+
+                                        )}
+
+                                        {editForm.planName === "Walk-in" && (
+
+                                            <option value="0">
+
+                                                Walk-in
+
+                                            </option>
+
+                                        )}
+
+                                    </select>
+
+                                </div>
+
+
+                                <div className="mb-3">
+
+                                    <label className="form-label">
+
+                                        Price (₱)
+
+                                    </label>
+
+                                    <input
+                                        type="number"
+                                        className="form-control"
+                                        name="price"
+                                        value={editForm.price}
+                                        onChange={handleEditChange}
+                                        min="0"
+                                        step="0.01"
+                                        required
+                                    />
+
+                                    <small className="text-muted">
+
+                                        Automatic price can be changed
+                                        by the Admin.
+
+                                    </small>
+
+                                </div>
+
+
+                                {/* EDIT BUTTONS */}
+
+                                <div className="d-flex gap-2">
+
+                                    <button
+                                        type="submit"
+                                        className="btn btn-dark"
+                                    >
+
+                                        <FaEdit className="me-2" />
+
+                                        Update Plan
+
+                                    </button>
+
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={cancelEdit}
+                                    >
+
+                                        Cancel
+
+                                    </button>
+
+                                </div>
+
+                            </form>
+
+                        </div>
+
+                    </div>
+
+                )}
 
 
                 {/* =================================
@@ -694,7 +1115,6 @@ export default function MembershipPlans() {
 
                             </h5>
 
-
                             <div className="search-box">
 
                                 <FaSearch className="search-icon" />
@@ -703,11 +1123,8 @@ export default function MembershipPlans() {
                                     className="form-control"
                                     placeholder="Search..."
                                     value={search}
-                                    onChange={
-                                        (e) =>
-                                            setSearch(
-                                                e.target.value
-                                            )
+                                    onChange={(e) =>
+                                        setSearch(e.target.value)
                                     }
                                 />
 
@@ -744,7 +1161,6 @@ export default function MembershipPlans() {
 
                             </thead>
 
-
                             <tbody>
 
                                 {filteredPlans.length === 0 ? (
@@ -774,13 +1190,11 @@ export default function MembershipPlans() {
 
                                             </td>
 
-
                                             <td>
 
                                                 {plan.planName}
 
                                             </td>
-
 
                                             <td>
 
@@ -791,7 +1205,6 @@ export default function MembershipPlans() {
 
                                             </td>
 
-
                                             <td>
 
                                                 ₱
@@ -800,7 +1213,6 @@ export default function MembershipPlans() {
                                                 ).toLocaleString()}
 
                                             </td>
-
 
                                             <td>
 
@@ -819,7 +1231,6 @@ export default function MembershipPlans() {
                                                             <FaEdit />
 
                                                         </button>
-
 
                                                         <button
                                                             className="btn btn-danger btn-sm"
