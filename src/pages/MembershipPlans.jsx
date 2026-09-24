@@ -299,23 +299,20 @@ export default function MembershipPlans() {
 
         setEditingId(plan.planID);
 
-        setEditForm({
+             setEditForm({
 
-            planName: plan.planName,
+                planName: plan.planName,
 
-            durationMonths:
+                durationMonths:
                 plan.planName === "Walk-in"
-                    ? "0"
-                    : String(plan.durationMonths),
+                ? "0"
+                : String(plan.durationMonths),
 
-            // Keep the existing database price.
-            // This allows the Admin to manually
-            // change the price.
-            price: plan.price
+                price: plan.price
 
-        });
+    });
 
-    }
+}
 
     // ==========================================
     // EDIT FORM CHANGE
@@ -323,38 +320,19 @@ export default function MembershipPlans() {
 
     function handleEditChange(e) {
 
-        const { name, value } = e.target;
+    const { name, value } = e.target;
 
-        // PLAN NAME
-        if (name === "planName") {
+    if (name === "planName") {
 
-            if (value === "Walk-in") {
-
-                setEditForm({
-
-                    planName: "Walk-in",
-
-                    durationMonths: "0",
-
-                    price: 100
-
-                });
-
-                return;
-
-            }
-
-            // When changing the membership type,
-            // reset duration and calculate only
-            // after a duration is selected.
+        if (value === "Walk-in") {
 
             setEditForm({
 
-                planName: value,
+                planName: "Walk-in",
 
-                durationMonths: "",
+                durationMonths: "0",
 
-                price: ""
+                price: 100
 
             });
 
@@ -362,43 +340,57 @@ export default function MembershipPlans() {
 
         }
 
-        // DURATION
-        if (name === "durationMonths") {
+        setEditForm({
 
-            const automaticPrice =
-                getDefaultPrice(
-                    editForm.planName,
-                    value
-                );
+            planName: value,
 
-            setEditForm({
+            durationMonths: "",
 
-                ...editForm,
+            price: ""
 
-                durationMonths: value,
+        });
 
-                price: automaticPrice
-
-            });
-
-            return;
-
-        }
-
-        // PRICE
-        if (name === "price") {
-
-            setEditForm({
-
-                ...editForm,
-
-                price: value
-
-            });
-
-        }
+        return;
 
     }
+
+
+    if (name === "durationMonths") {
+
+        const automaticPrice =
+            getDefaultPrice(
+                editForm.planName,
+                value
+            );
+
+        setEditForm({
+
+            ...editForm,
+
+            durationMonths: value,
+
+            price: automaticPrice
+
+        });
+
+        return;
+
+    }
+
+
+    if (name === "price") {
+
+        setEditForm({
+
+            ...editForm,
+
+            price: value
+
+        });
+
+    }
+
+}
 
     // ==========================================
     // UPDATE PLAN
@@ -406,104 +398,96 @@ export default function MembershipPlans() {
 
     async function updatePlan(e) {
 
-        e.preventDefault();
+    e.preventDefault();
 
-        if (editingId === null) {
+    if (editingId === null) {
+        return;
+    }
 
-            return;
+    if (!editForm.planName) {
+
+        alert("Please select a membership type.");
+
+        return;
+
+    }
+
+    if (
+        editForm.planName !== "Walk-in" &&
+        !editForm.durationMonths
+    ) {
+
+        alert("Please select a duration.");
+
+        return;
+
+    }
+
+    if (
+        editForm.price === "" ||
+        Number(editForm.price) < 0
+    ) {
+
+        alert("Please enter a valid price.");
+
+        return;
+
+    }
+
+    try {
+
+        const payload = {
+
+            planName: editForm.planName,
+
+            durationMonths:
+                editForm.planName === "Walk-in"
+                    ? 0
+                    : Number(editForm.durationMonths),
+
+            price: Number(editForm.price)
+
+        };
+
+        await api.put(
+            `/MembershipPlans/${editingId}`,
+            payload
+        );
+
+        alert(
+            "Membership plan updated successfully."
+        );
+
+        cancelEdit();
+
+        loadPlans();
+
+    }
+    catch (err) {
+
+        console.log(err);
+
+        if (err.response) {
+
+            const message =
+                typeof err.response.data === "string"
+                    ? err.response.data
+                    : "Unable to update membership plan.";
+
+            alert(message);
 
         }
-
-        if (!editForm.planName) {
+        else {
 
             alert(
-                "Please select a membership type."
+                "Unable to update membership plan."
             );
-
-            return;
-
-        }
-
-        if (
-            editForm.planName !== "Walk-in" &&
-            !editForm.durationMonths
-        ) {
-
-            alert(
-                "Please select a duration."
-            );
-
-            return;
-
-        }
-
-        if (
-            editForm.price === "" ||
-            Number(editForm.price) < 0
-        ) {
-
-            alert(
-                "Please enter a valid price."
-            );
-
-            return;
-
-        }
-
-        try {
-
-            const payload = {
-
-                planName: editForm.planName,
-
-                durationMonths:
-                    editForm.planName === "Walk-in"
-                        ? 0
-                        : Number(editForm.durationMonths),
-
-                price: Number(editForm.price)
-
-            };
-
-            await api.put(
-                `/MembershipPlans/${editingId}`,
-                payload
-            );
-
-            alert(
-                "Membership plan updated successfully."
-            );
-
-            cancelEdit();
-
-            loadPlans();
-
-        }
-        catch (err) {
-
-            console.log(err);
-
-            if (err.response) {
-
-                const message =
-                    typeof err.response.data === "string"
-                        ? err.response.data
-                        : "Unable to update membership plan.";
-
-                alert(message);
-
-            }
-            else {
-
-                alert(
-                    "Unable to update membership plan."
-                );
-
-            }
 
         }
 
     }
+
+}
 
     // ==========================================
     // CANCEL EDIT
@@ -511,11 +495,17 @@ export default function MembershipPlans() {
 
     function cancelEdit() {
 
-        setEditingId(null);
+    setEditingId(null);
 
-        setEditForm(emptyEditForm);
+    setEditForm({
 
-    }
+        planName: "",
+        durationMonths: "",
+        price: ""
+
+    });
+
+}
 
     // ==========================================
     // DELETE PLAN
@@ -842,261 +832,265 @@ export default function MembershipPlans() {
 
 
                 {/* =================================
-                    EDIT PLAN FORM
-                ================================= */}
+    EDIT PLAN MODAL
+================================= */}
 
-                {editingId !== null && role === "Admin" && (
+{editingId !== null && role === "Admin" && (
 
-                    <div className="card shadow-sm border-0 mb-4">
+    <div className="edit-modal-overlay">
 
-                        <div className="card-header bg-white">
+        <div className="edit-modal">
 
-                            <h5 className="mb-0">
+            {/* MODAL HEADER */}
 
-                                <FaEdit className="me-2" />
+            <div className="edit-modal-header">
 
-                                Edit Membership Plan
+                <h3>
+                    <FaEdit className="me-2" />
+                    Edit Membership Plan
+                </h3>
 
-                            </h5>
+            </div>
 
-                        </div>
 
-                        <div className="card-body">
+            {/* EDIT FORM */}
 
-                            <form onSubmit={updatePlan}>
+            <form onSubmit={updatePlan}>
 
-                                {/* VERTICAL EDIT FORM */}
+                {/* MEMBERSHIP TYPE */}
 
-                                <div className="mb-3">
+                <div className="edit-form-group">
 
-                                    <label className="form-label">
+                    <label className="form-label">
 
-                                        Membership Type
+                        Membership Type
 
-                                    </label>
+                    </label>
 
-                                    <select
-                                        className="form-select"
-                                        name="planName"
-                                        value={editForm.planName}
-                                        onChange={handleEditChange}
-                                        required
-                                    >
+                    <select
+                        className="form-select"
+                        name="planName"
+                        value={editForm.planName}
+                        onChange={handleEditChange}
+                        required
+                    >
 
-                                        <option value="">
+                        <option value="">
+                            Select Membership
+                        </option>
 
-                                            Select Membership
+                        <option value="Monthly">
+                            Monthly
+                        </option>
 
-                                        </option>
+                        <option value="Yearly">
+                            Yearly
+                        </option>
 
-                                        <option value="Monthly">
+                        <option value="Walk-in">
+                            Walk-in
+                        </option>
 
-                                            Monthly
+                    </select>
 
-                                        </option>
+                </div>
 
-                                        <option value="Yearly">
 
-                                            Yearly
+                {/* DURATION */}
 
-                                        </option>
+                <div className="edit-form-group">
 
-                                        <option value="Walk-in">
+                    <label className="form-label">
 
-                                            Walk-in
+                        Duration
 
-                                        </option>
+                    </label>
 
-                                    </select>
+                    <select
+                        className="form-select"
+                        name="durationMonths"
+                        value={editForm.durationMonths}
+                        onChange={handleEditChange}
+                        disabled={
+                            editForm.planName === "Walk-in"
+                        }
+                        required={
+                            editForm.planName !== "Walk-in"
+                        }
+                    >
 
-                                </div>
+                        <option value="">
+                            Select Duration
+                        </option>
 
 
-                                <div className="mb-3">
+                        {/* MONTHLY */}
 
-                                    <label className="form-label">
+                        {editForm.planName === "Monthly" && (
 
-                                        Duration
+                            <>
+                                <option value="1">
+                                    1 Month
+                                </option>
 
-                                    </label>
+                                <option value="2">
+                                    2 Months
+                                </option>
 
-                                    <select
-                                        className="form-select"
-                                        name="durationMonths"
-                                        value={editForm.durationMonths}
-                                        onChange={handleEditChange}
-                                        disabled={
-                                            editForm.planName === "Walk-in"
-                                        }
-                                        required={
-                                            editForm.planName !== "Walk-in"
-                                        }
-                                    >
+                                <option value="3">
+                                    3 Months
+                                </option>
 
-                                        <option value="">
+                                <option value="4">
+                                    4 Months
+                                </option>
 
-                                            Select Duration
+                                <option value="5">
+                                    5 Months
+                                </option>
 
-                                        </option>
+                                <option value="6">
+                                    6 Months
+                                </option>
 
-                                        {editForm.planName === "Monthly" && (
+                                <option value="7">
+                                    7 Months
+                                </option>
 
-                                            <>
-                                                <option value="1">
-                                                    1 Month
-                                                </option>
+                                <option value="8">
+                                    8 Months
+                                </option>
 
-                                                <option value="2">
-                                                    2 Months
-                                                </option>
+                                <option value="9">
+                                    9 Months
+                                </option>
 
-                                                <option value="3">
-                                                    3 Months
-                                                </option>
+                                <option value="10">
+                                    10 Months
+                                </option>
 
-                                                <option value="4">
-                                                    4 Months
-                                                </option>
+                                <option value="11">
+                                    11 Months
+                                </option>
 
-                                                <option value="5">
-                                                    5 Months
-                                                </option>
+                                <option value="12">
+                                    12 Months
+                                </option>
+                            </>
 
-                                                <option value="6">
-                                                    6 Months
-                                                </option>
+                        )}
 
-                                                <option value="7">
-                                                    7 Months
-                                                </option>
 
-                                                <option value="8">
-                                                    8 Months
-                                                </option>
+                        {/* YEARLY */}
 
-                                                <option value="9">
-                                                    9 Months
-                                                </option>
+                        {editForm.planName === "Yearly" && (
 
-                                                <option value="10">
-                                                    10 Months
-                                                </option>
+                            <>
+                                <option value="12">
+                                    12 Months
+                                </option>
 
-                                                <option value="11">
-                                                    11 Months
-                                                </option>
+                                <option value="24">
+                                    24 Months
+                                </option>
 
-                                                <option value="12">
-                                                    12 Months
-                                                </option>
-                                            </>
+                                <option value="36">
+                                    36 Months
+                                </option>
 
-                                        )}
+                                <option value="48">
+                                    48 Months
+                                </option>
 
-                                        {editForm.planName === "Yearly" && (
+                                <option value="60">
+                                    60 Months
+                                </option>
+                            </>
 
-                                            <>
-                                                <option value="12">
-                                                    12 Months
-                                                </option>
+                        )}
 
-                                                <option value="24">
-                                                    24 Months
-                                                </option>
 
-                                                <option value="36">
-                                                    36 Months
-                                                </option>
+                        {/* WALK-IN */}
 
-                                                <option value="48">
-                                                    48 Months
-                                                </option>
+                        {editForm.planName === "Walk-in" && (
 
-                                                <option value="60">
-                                                    60 Months
-                                                </option>
-                                            </>
+                            <option value="0">
+                                Walk-in
+                            </option>
 
-                                        )}
+                        )}
 
-                                        {editForm.planName === "Walk-in" && (
+                    </select>
 
-                                            <option value="0">
+                </div>
 
-                                                Walk-in
 
-                                            </option>
+                {/* PRICE */}
 
-                                        )}
+                <div className="edit-form-group">
 
-                                    </select>
+                    <label className="form-label">
 
-                                </div>
+                        Price (₱)
 
+                    </label>
 
-                                <div className="mb-3">
+                    <input
+                        type="number"
+                        className="form-control"
+                        name="price"
+                        value={editForm.price}
+                        onChange={handleEditChange}
+                        min="0"
+                        step="0.01"
+                        required
+                    />
 
-                                    <label className="form-label">
+                    <small className="text-muted">
 
-                                        Price (₱)
+                        Automatic price can be changed
+                        by the Admin.
 
-                                    </label>
+                    </small>
 
-                                    <input
-                                        type="number"
-                                        className="form-control"
-                                        name="price"
-                                        value={editForm.price}
-                                        onChange={handleEditChange}
-                                        min="0"
-                                        step="0.01"
-                                        required
-                                    />
+                </div>
 
-                                    <small className="text-muted">
 
-                                        Automatic price can be changed
-                                        by the Admin.
+                {/* BUTTONS */}
 
-                                    </small>
+                <div className="edit-modal-buttons">
 
-                                </div>
+                    <button
+                        type="submit"
+                        className="btn btn-dark"
+                    >
 
+                        <FaEdit className="me-2" />
 
-                                {/* EDIT BUTTONS */}
+                        Update Plan
 
-                                <div className="d-flex gap-2">
+                    </button>
 
-                                    <button
-                                        type="submit"
-                                        className="btn btn-dark"
-                                    >
 
-                                        <FaEdit className="me-2" />
+                    <button
+                        type="button"
+                        className="btn btn-secondary"
+                        onClick={cancelEdit}
+                    >
 
-                                        Update Plan
+                        Cancel
 
-                                    </button>
+                    </button>
 
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={cancelEdit}
-                                    >
+                </div>
 
-                                        Cancel
+            </form>
 
-                                    </button>
+        </div>
 
-                                </div>
+    </div>
 
-                            </form>
-
-                        </div>
-
-                    </div>
-
-                )}
+)}
 
 
                 {/* =================================
