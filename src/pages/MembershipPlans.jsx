@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-
 import DashboardLayout from "../layouts/DashboardLayout";
 import api from "../api/api";
 
@@ -15,25 +14,27 @@ export default function MembershipPlans() {
 
     const role = localStorage.getItem("role");
 
-    const emptyPlan = {
-    planName: "",
-    durationMonths: "",
-    price: 0
-};
-
     const [plans, setPlans] = useState([]);
     const [search, setSearch] = useState("");
 
-    // CREATE PLAN FORM
-    const [form, setForm] = useState(emptyPlan);
-
-    // EDIT PLAN FORM
-    const [editForm, setEditForm] = useState(emptyPlan);
-
     const [editingId, setEditingId] = useState(null);
 
+    const emptyForm = {
+        planName: "",
+        durationMonths: "",
+        price: ""
+    };
+
+    const [form, setForm] = useState(emptyForm);
+
+    // ==========================================
+    // LOAD PLANS
+    // ==========================================
+
     useEffect(() => {
+
         loadPlans();
+
     }, []);
 
     async function loadPlans() {
@@ -44,7 +45,8 @@ export default function MembershipPlans() {
 
             setPlans(res.data);
 
-        } catch (err) {
+        }
+        catch (err) {
 
             console.log(err);
 
@@ -52,610 +54,808 @@ export default function MembershipPlans() {
 
     }
 
-    // =========================
-    // CREATE FORM
-    // =========================
+    // ==========================================
+    // DEFAULT PRICING
+    // ==========================================
+
+    function getDefaultPrice(planName, durationMonths) {
+
+        const duration = Number(durationMonths);
+
+        if (planName === "Walk-in") {
+
+            return 100;
+
+        }
+
+        if (
+            planName === "Monthly" ||
+            planName === "Yearly"
+        ) {
+
+            if (!duration || duration <= 0) {
+                return "";
+            }
+
+            return duration * 3000;
+
+        }
+
+        return "";
+
+    }
+
+    // ==========================================
+    // HANDLE FORM CHANGE
+    // ==========================================
 
     function handleChange(e) {
 
         const { name, value } = e.target;
 
-        setForm({
-            ...form,
-            [name]: value
-        });
+        // ======================================
+        // PLAN NAME CHANGED
+        // ======================================
+
+        if (name === "planName") {
+
+            if (value === "Walk-in") {
+
+                setForm({
+                    planName: "Walk-in",
+                    durationMonths: "0",
+                    price: 100
+                });
+
+                return;
+
+            }
+
+            setForm({
+                planName: value,
+                durationMonths: "",
+                price: ""
+            });
+
+            return;
+
+        }
+
+        // ======================================
+        // DURATION CHANGED
+        // ======================================
+
+        if (name === "durationMonths") {
+
+            const automaticPrice = getDefaultPrice(
+                form.planName,
+                value
+            );
+
+            setForm({
+                ...form,
+                durationMonths: value,
+                price: automaticPrice
+            });
+
+            return;
+
+        }
+
+        // ======================================
+        // PRICE CHANGED
+        // ======================================
+
+        if (name === "price") {
+
+            setForm({
+                ...form,
+                price: value
+            });
+
+            return;
+
+        }
 
     }
+
+    // ==========================================
+    // SAVE PLAN
+    // ==========================================
 
     async function savePlan(e) {
 
-    e.preventDefault();
+        e.preventDefault();
 
-    try {
+        // Prevent invalid data
+        if (!form.planName) {
 
-        const payload = {
-            planName: form.planName,
-            durationMonths: Number(form.durationMonths),
-            price: Number(form.price)
-        };
+            alert("Please select a membership type.");
 
-        await api.post("/MembershipPlans", payload);
-
-        setForm(emptyPlan);
-
-        await loadPlans();
-
-    }
-    catch (err) {
-
-        console.log(err);
-
-        if (err.response) {
-
-            const message =
-                typeof err.response.data === "string"
-                    ? err.response.data
-                    : "Unable to add membership plan.";
-
-            alert(message);
+            return;
 
         }
-        else {
-
-            alert("Unable to add membership plan.");
-
-        }
-
-    }
-
-}
-
-    // =========================
-    // EDIT FORM
-    // =========================
-
-    function editPlan(plan) {
-
-    setEditingId(plan.planID);
-
-    setEditForm({
-        planName: plan.planName || "",
-        durationMonths: plan.durationMonths || "",
-        price: plan.price || 0
-    });
-
-}
-
-    function handleEditChange(e) {
-
-    const { name, value } = e.target;
-
-    const updated = {
-        ...editForm,
-        [name]: value
-    };
-
-    if (name === "planName") {
-
-        if (value === "Walk-in") {
-            updated.durationMonths = 0;
-            updated.price = 100;
-        }
-
-    }
-
-    if (name === "durationMonths") {
 
         if (
-            editForm.planName === "Monthly" ||
-            editForm.planName === "Yearly"
+            form.planName !== "Walk-in" &&
+            !form.durationMonths
         ) {
-            updated.price = Number(value) * 3000;
-        }
 
-        if (editForm.planName === "Walk-in") {
-            updated.price = 100;
-        }
+            alert("Please select a duration.");
 
-    }
-
-    setEditForm(updated);
-
-}
-
-    async function updatePlan(e) {
-
-    e.preventDefault();
-
-    try {
-
-        const payload = {
-            planName: editForm.planName,
-            durationMonths: Number(editForm.durationMonths),
-            price: Number(editForm.price)
-        };
-
-        await api.put(
-            `/MembershipPlans/${editingId}`,
-            payload
-        );
-
-        cancelEdit();
-
-        await loadPlans();
-
-    }
-    catch (err) {
-
-        console.log(err);
-
-        if (err.response) {
-
-            const message =
-                typeof err.response.data === "string"
-                    ? err.response.data
-                    : "Unable to update membership plan.";
-
-            alert(message);
-
-        }
-        else {
-
-            alert("Unable to update membership plan.");
-
-        }
-
-    }
-
-}
-
-    function cancelEdit() {
-
-    setEditingId(null);
-    setEditForm(emptyPlan);
-
-}
-
-    // =========================
-    // DELETE
-    // =========================
-
-    async function deletePlan(id) {
-
-        if (!window.confirm("Delete this membership plan?")) {
             return;
+
+        }
+
+        if (
+            form.price === "" ||
+            Number(form.price) < 0
+        ) {
+
+            alert("Please enter a valid price.");
+
+            return;
+
         }
 
         try {
 
-            await api.delete(`/MembershipPlans/${id}`);
+            const payload = {
 
-            await loadPlans();
+                planName: form.planName,
 
-        } catch (err) {
+                durationMonths:
+                    form.planName === "Walk-in"
+                        ? 0
+                        : Number(form.durationMonths),
+
+                price: Number(form.price)
+
+            };
+
+            // ==================================
+            // ADD
+            // ==================================
+
+            if (editingId === null) {
+
+                await api.post(
+                    "/MembershipPlans",
+                    payload
+                );
+
+            }
+
+            // ==================================
+            // UPDATE
+            // ==================================
+
+            else {
+
+                await api.put(
+                    `/MembershipPlans/${editingId}`,
+                    payload
+                );
+
+            }
+
+            alert(
+                editingId === null
+                    ? "Membership plan added successfully."
+                    : "Membership plan updated successfully."
+            );
+
+            resetForm();
+
+            loadPlans();
+
+        }
+        catch (err) {
 
             console.log(err);
 
-            alert("Unable to delete membership plan.");
+            if (err.response) {
+
+                const message =
+                    typeof err.response.data === "string"
+                        ? err.response.data
+                        : "Unable to save membership plan.";
+
+                alert(message);
+
+            }
+            else {
+
+                alert(
+                    "Unable to save membership plan."
+                );
+
+            }
 
         }
 
     }
 
-    // =========================
+    // ==========================================
+    // EDIT PLAN
+    // ==========================================
+
+    function editPlan(plan) {
+
+        setEditingId(plan.planID);
+
+        setForm({
+
+            planName: plan.planName,
+
+            durationMonths:
+                plan.planName === "Walk-in"
+                    ? "0"
+                    : String(plan.durationMonths),
+
+            // Keep the actual database price.
+            // Admin can modify it.
+            price: plan.price
+
+        });
+
+    }
+
+    // ==========================================
+    // DELETE PLAN
+    // ==========================================
+
+    async function deletePlan(id) {
+
+        if (
+            !window.confirm(
+                "Delete this membership plan?"
+            )
+        ) {
+
+            return;
+
+        }
+
+        try {
+
+            await api.delete(
+                `/MembershipPlans/${id}`
+            );
+
+            loadPlans();
+
+        }
+        catch {
+
+            alert(
+                "Unable to delete membership plan."
+            );
+
+        }
+
+    }
+
+    // ==========================================
+    // RESET FORM
+    // ==========================================
+
+    function resetForm() {
+
+        setEditingId(null);
+
+        setForm(emptyForm);
+
+    }
+
+    // ==========================================
     // SEARCH
-    // =========================
+    // ==========================================
 
     const filteredPlans = plans.filter(plan =>
 
-        (plan.planName || "")
-            .toLowerCase()
-            .includes(search.toLowerCase())
+        plan.planName
+            ?.toLowerCase()
+            .includes(
+                search.toLowerCase()
+            )
 
     );
+
+    // ==========================================
+    // RENDER
+    // ==========================================
 
     return (
 
         <DashboardLayout>
 
-            {/* =========================
-                PAGE HEADER
-            ========================== */}
+            <div className="page-container">
 
-            <div className="dashboard-header">
+                {/* =================================
+                    PAGE HEADER
+                ================================= */}
 
-                <div>
+                <div className="page-header">
 
-                    <h1>Membership Plans</h1>
+                    <div>
 
-                    <p>
-                        Manage available gym membership plans.
-                    </p>
+                        <h1 className="page-title">
 
-                </div>
+                            <FaClipboardList className="me-2" />
 
-            </div>
+                            Membership Plans
 
+                        </h1>
 
-            {/* =========================
-                ADD PLAN FORM
-            ========================== */}
+                        <p className="page-subtitle">
 
-            <div className="dashboard-panel mb-4">
+                            Manage gym membership plans.
 
-                <form onSubmit={savePlan}>
-
-                    <div className="row">
-
-                        <div className="col-md-4 mb-3">
-
-                            <input
-                                className="form-control"
-                                placeholder="Plan Name"
-                                name="planName"
-                                value={form.planName}
-                                onChange={handleChange}
-                                required
-                            />
-
-                        </div>
-
-
-                        <div className="col-md-4 mb-3">
-
-                            <input
-                                type="number"
-                                className="form-control"
-                                placeholder="Duration in Months"
-                                name="durationMonths"
-                                value={form.durationMonths}
-                                onChange={handleChange}
-                                min="1"
-                                required
-                            />
-
-                        </div>
-
-
-                        <div className="col-md-4 mb-3">
-
-                            <input
-                                type="number"
-                                className="form-control"
-                                placeholder="Price"
-                                name="price"
-                                value={form.price}
-                                onChange={handleChange}
-                                min="0"
-                                step="0.01"
-                                required
-                            />
-
-                        </div>
-
-
-                        <div className="col-md-12">
-
-                            <button className="btn-add">
-
-                                <FaPlus className="me-2" />
-
-                                Add Plan
-
-                            </button>
-
-                        </div>
-
-                    </div>
-
-                </form>
-
-            </div>
-
-
-            {/* =========================
-                PLANS TABLE
-            ========================== */}
-
-            <div className="dashboard-panel">
-
-                <div className="panel-title">
-
-                    <span>
-
-                        <FaClipboardList className="me-2" />
-
-                        Membership Plans
-
-                    </span>
-
-
-                    <div style={{ width: "320px" }}>
-
-                        <div className="input-group">
-
-                            <span className="input-group-text">
-
-                                <FaSearch />
-
-                            </span>
-
-                            <input
-                                className="form-control"
-                                placeholder="Search plan..."
-                                value={search}
-                                onChange={(e) =>
-                                    setSearch(e.target.value)
-                                }
-                            />
-
-                        </div>
+                        </p>
 
                     </div>
 
                 </div>
 
 
-                <table className="table align-middle">
+                {/* =================================
+                    ADD / EDIT FORM
+                ================================= */}
 
-                    <thead>
+                <div className="card shadow-sm border-0 mb-4">
 
-                        <tr>
+                    <div className="card-body">
 
-                            <th>ID</th>
-                            <th>Plan Name</th>
-                            <th>Duration</th>
-                            <th>Price</th>
-                            <th width="180">Action</th>
+                        {role === "Admin" && (
 
-                        </tr>
+                            <form onSubmit={savePlan}>
 
-                    </thead>
+                                <div className="row">
 
+                                    {/* PLAN NAME */}
 
-                    <tbody>
+                                    <div className="col-md-4 mb-3">
 
-                        {filteredPlans.length === 0 ? (
+                                        <label className="form-label">
 
-                            <tr>
+                                            Membership Type
 
-                                <td
-                                    colSpan="5"
-                                    className="text-center py-4"
-                                >
+                                        </label>
 
-                                    No membership plans found.
-
-                                </td>
-
-                            </tr>
-
-                        ) : (
-
-                            filteredPlans.map(plan => (
-
-                                <tr key={plan.membershipPlanID}>
-
-                                    <td>
-                                        {plan.membershipPlanID}
-                                    </td>
-
-                                    <td>
-                                        <strong>
-                                            {plan.planName}
-                                        </strong>
-                                    </td>
-
-                                    <td>
-                                        {plan.durationMonths} month(s)
-                                    </td>
-
-                                    <td>
-                                        ₱{Number(plan.price).toLocaleString()}
-                                    </td>
-
-                                    <td>
-
-                                        <button
-                                            className="btn btn-warning btn-sm me-2"
-                                            onClick={() =>
-                                                editPlan(plan)
-                                            }
-                                            title="Edit Plan"
+                                        <select
+                                            className="form-select"
+                                            name="planName"
+                                            value={form.planName}
+                                            onChange={handleChange}
+                                            required
                                         >
 
-                                            <FaEdit />
+                                            <option value="">
+
+                                                Select Membership
+
+                                            </option>
+
+                                            <option value="Monthly">
+
+                                                Monthly
+
+                                            </option>
+
+                                            <option value="Yearly">
+
+                                                Yearly
+
+                                            </option>
+
+                                            <option value="Walk-in">
+
+                                                Walk-in
+
+                                            </option>
+
+                                        </select>
+
+                                    </div>
+
+
+                                    {/* DURATION */}
+
+                                    <div className="col-md-4 mb-3">
+
+                                        <label className="form-label">
+
+                                            Duration
+
+                                        </label>
+
+                                        <select
+                                            className="form-select"
+                                            name="durationMonths"
+                                            value={form.durationMonths}
+                                            onChange={handleChange}
+                                            disabled={
+                                                form.planName === "Walk-in"
+                                            }
+                                            required={
+                                                form.planName !== "Walk-in"
+                                            }
+                                        >
+
+                                            <option value="">
+
+                                                Select Duration
+
+                                            </option>
+
+
+                                            {/* MONTHLY */}
+
+                                            {form.planName === "Monthly" && (
+
+                                                <>
+                                                    <option value="1">
+                                                        1 Month
+                                                    </option>
+
+                                                    <option value="2">
+                                                        2 Months
+                                                    </option>
+
+                                                    <option value="3">
+                                                        3 Months
+                                                    </option>
+
+                                                    <option value="4">
+                                                        4 Months
+                                                    </option>
+
+                                                    <option value="5">
+                                                        5 Months
+                                                    </option>
+
+                                                    <option value="6">
+                                                        6 Months
+                                                    </option>
+
+                                                    <option value="7">
+                                                        7 Months
+                                                    </option>
+
+                                                    <option value="8">
+                                                        8 Months
+                                                    </option>
+
+                                                    <option value="9">
+                                                        9 Months
+                                                    </option>
+
+                                                    <option value="10">
+                                                        10 Months
+                                                    </option>
+
+                                                    <option value="11">
+                                                        11 Months
+                                                    </option>
+
+                                                    <option value="12">
+                                                        12 Months
+                                                    </option>
+                                                </>
+
+                                            )}
+
+
+                                            {/* YEARLY */}
+
+                                            {form.planName === "Yearly" && (
+
+                                                <>
+                                                    <option value="12">
+                                                        12 Months
+                                                    </option>
+
+                                                    <option value="24">
+                                                        24 Months
+                                                    </option>
+
+                                                    <option value="36">
+                                                        36 Months
+                                                    </option>
+
+                                                    <option value="48">
+                                                        48 Months
+                                                    </option>
+
+                                                    <option value="60">
+                                                        60 Months
+                                                    </option>
+                                                </>
+
+                                            )}
+
+
+                                            {/* WALK-IN */}
+
+                                            {form.planName === "Walk-in" && (
+
+                                                <option value="0">
+
+                                                    Walk-in
+
+                                                </option>
+
+                                            )}
+
+                                        </select>
+
+                                    </div>
+
+
+                                    {/* PRICE */}
+
+                                    <div className="col-md-4 mb-3">
+
+                                        <label className="form-label">
+
+                                            Price (₱)
+
+                                        </label>
+
+                                        <input
+                                            type="number"
+                                            className="form-control"
+                                            name="price"
+                                            value={form.price}
+                                            onChange={handleChange}
+                                            min="0"
+                                            step="0.01"
+                                            required
+                                        />
+
+                                        <small className="text-muted">
+
+                                            Automatically calculated.
+                                            Admin can change the price.
+
+                                        </small>
+
+                                    </div>
+
+                                </div>
+
+
+                                {/* BUTTONS */}
+
+                                <div className="d-flex gap-2">
+
+                                    <button
+                                        type="submit"
+                                        className="btn btn-dark"
+                                    >
+
+                                        {editingId === null
+                                            ? (
+                                                <>
+                                                    <FaPlus className="me-2" />
+                                                    Add Plan
+                                                </>
+                                            )
+                                            : (
+                                                <>
+                                                    <FaEdit className="me-2" />
+                                                    Update Plan
+                                                </>
+                                            )
+                                        }
+
+                                    </button>
+
+
+                                    {editingId !== null && (
+
+                                        <button
+                                            type="button"
+                                            className="btn btn-secondary"
+                                            onClick={resetForm}
+                                        >
+
+                                            Cancel
 
                                         </button>
 
+                                    )}
 
-                                        {role === "Admin" && (
+                                </div>
 
-                                            <button
-                                                className="btn btn-danger btn-sm"
-                                                onClick={() =>
-                                                    deletePlan(
-                                                        plan.membershipPlanID
-                                                    )
-                                                }
-                                                title="Delete Plan"
-                                            >
-
-                                                <FaTrash />
-
-                                            </button>
-
-                                        )}
-
-                                    </td>
-
-                                </tr>
-
-                            ))
+                            </form>
 
                         )}
 
-                    </tbody>
+                    </div>
 
-                </table>
+                </div>
+
+
+                {/* =================================
+                    MEMBERSHIP PLAN TABLE
+                ================================= */}
+
+                <div className="card shadow-sm border-0">
+
+                    <div className="card-header bg-white">
+
+                        <div className="d-flex justify-content-between align-items-center">
+
+                            <h5 className="mb-0">
+
+                                Membership Plans
+
+                            </h5>
+
+
+                            <div className="search-box">
+
+                                <FaSearch className="search-icon" />
+
+                                <input
+                                    className="form-control"
+                                    placeholder="Search..."
+                                    value={search}
+                                    onChange={
+                                        (e) =>
+                                            setSearch(
+                                                e.target.value
+                                            )
+                                    }
+                                />
+
+                            </div>
+
+                        </div>
+
+                    </div>
+
+
+                    <div className="table-responsive">
+
+                        <table className="table table-hover align-middle mb-0">
+
+                            <thead className="table-light">
+
+                                <tr>
+
+                                    <th>ID</th>
+
+                                    <th>Membership Type</th>
+
+                                    <th>Duration</th>
+
+                                    <th>Price</th>
+
+                                    <th width="150">
+
+                                        Actions
+
+                                    </th>
+
+                                </tr>
+
+                            </thead>
+
+
+                            <tbody>
+
+                                {filteredPlans.length === 0 ? (
+
+                                    <tr>
+
+                                        <td
+                                            colSpan="5"
+                                            className="text-center py-5"
+                                        >
+
+                                            No plans found.
+
+                                        </td>
+
+                                    </tr>
+
+                                ) : (
+
+                                    filteredPlans.map(plan => (
+
+                                        <tr key={plan.planID}>
+
+                                            <td>
+
+                                                #{plan.planID}
+
+                                            </td>
+
+
+                                            <td>
+
+                                                {plan.planName}
+
+                                            </td>
+
+
+                                            <td>
+
+                                                {plan.planName === "Walk-in"
+                                                    ? "Walk-in"
+                                                    : `${plan.durationMonths} Month(s)`
+                                                }
+
+                                            </td>
+
+
+                                            <td>
+
+                                                ₱
+                                                {Number(
+                                                    plan.price
+                                                ).toLocaleString()}
+
+                                            </td>
+
+
+                                            <td>
+
+                                                {role === "Admin" && (
+
+                                                    <>
+
+                                                        <button
+                                                            className="btn btn-warning btn-sm me-2"
+                                                            onClick={() =>
+                                                                editPlan(plan)
+                                                            }
+                                                            title="Edit Plan"
+                                                        >
+
+                                                            <FaEdit />
+
+                                                        </button>
+
+
+                                                        <button
+                                                            className="btn btn-danger btn-sm"
+                                                            onClick={() =>
+                                                                deletePlan(
+                                                                    plan.planID
+                                                                )
+                                                            }
+                                                            title="Delete Plan"
+                                                        >
+
+                                                            <FaTrash />
+
+                                                        </button>
+
+                                                    </>
+
+                                                )}
+
+                                            </td>
+
+                                        </tr>
+
+                                    ))
+
+                                )}
+
+                            </tbody>
+
+                        </table>
+
+                    </div>
+
+                </div>
 
             </div>
-
-            {/* =========================
-    EDIT MEMBERSHIP PLAN
-========================= */}
-
-{editingId !== null && (
-
-    <div
-        style={{
-            position: "fixed",
-            inset: 0,
-            backgroundColor: "rgba(0,0,0,0.5)",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "center",
-            zIndex: 1050,
-            padding: "20px"
-        }}
-    >
-
-        <div
-            className="card shadow"
-            style={{
-                width: "100%",
-                maxWidth: "550px",
-                maxHeight: "90vh",
-                overflowY: "auto",
-                backgroundColor: "#fff",
-                borderRadius: "15px"
-            }}
-        >
-
-            <div className="card-body">
-
-                <h4 className="mb-4">
-
-                    <FaEdit className="me-2" />
-
-                    Edit Membership Plan
-
-                </h4>
-
-
-                <form onSubmit={updatePlan}>
-
-                    {/* PLAN NAME */}
-
-                    <div className="mb-3">
-
-                        <label className="form-label">
-                            Membership Type
-                        </label>
-
-                        <select
-                            className="form-select"
-                            name="planName"
-                            value={editForm.planName}
-                            onChange={handleEditChange}
-                            required
-                        >
-
-                            <option value="">
-                                Select Membership Type
-                            </option>
-
-                            <option value="Monthly">
-                                Monthly
-                            </option>
-
-                            <option value="Yearly">
-                                Yearly
-                            </option>
-
-                            <option value="Walk-in">
-                                Walk-in
-                            </option>
-
-                        </select>
-
-                    </div>
-
-
-                    {/* DURATION */}
-
-                    <div className="mb-3">
-
-                        <label className="form-label">
-                            Duration (Months)
-                        </label>
-
-                        <input
-                            type="number"
-                            className="form-control"
-                            name="durationMonths"
-                            value={editForm.durationMonths}
-                            onChange={handleEditChange}
-                            min="0"
-                            required
-                        />
-
-                    </div>
-
-
-                    {/* PRICE */}
-
-                    <div className="mb-4">
-
-                        <label className="form-label">
-                            Price
-                        </label>
-
-                        <input
-                            type="number"
-                            className="form-control"
-                            name="price"
-                            value={editForm.price}
-                            onChange={handleEditChange}
-                            min="0"
-                            step="0.01"
-                            required
-                        />
-
-                    </div>
-
-
-                    <button
-                        type="submit"
-                        className="btn-add me-2"
-                    >
-
-                        <FaEdit className="me-2" />
-
-                        Update Plan
-
-                    </button>
-
-
-                    <button
-                        type="button"
-                        className="btn btn-secondary"
-                        onClick={cancelEdit}
-                    >
-
-                        Cancel
-
-                    </button>
-
-                </form>
-
-            </div>
-
-        </div>
-
-    </div>
-
-)}
 
         </DashboardLayout>
 
