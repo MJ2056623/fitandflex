@@ -136,6 +136,8 @@ export default function Memberships() {
 
     const [editingId, setEditingId] = useState(null);
 
+    const [showCreateModal, setShowCreateModal] = useState(false);
+
 
 
 
@@ -1194,11 +1196,38 @@ export default function Memberships() {
 
 
 
+
+
+            <div className="d-flex justify-content-end mb-3">
+                <button type="button" className="btn btn-dark" onClick={() => setShowCreateModal(true)}>+ Create Membership</button>
+            </div>
+
             {/* =================================================
 
                 CREATE MEMBERSHIP
 
             ================================================= */}
+
+            {showCreateModal && (
+                <div
+                    role="presentation"
+                    style={{
+                        position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.55)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        zIndex: 1050, padding: "20px", overflowY: "auto"
+                    }}
+                    onClick={() => setShowCreateModal(false)}
+                >
+                    <div
+                        role="dialog" aria-modal="true" aria-label="Create Membership"
+                        style={{ position: "relative", width: "100%", maxWidth: "1000px", maxHeight: "90vh", overflowY: "auto" }}
+                        onClick={(event) => event.stopPropagation()}
+                    >
+                        <button type="button" className="btn btn-secondary"
+                            onClick={() => setShowCreateModal(false)}
+                            style={{ position: "sticky", top: 0, float: "right", zIndex: 2, margin: "8px" }}
+                        >Close</button>
+
 
 
 
@@ -1507,6 +1536,11 @@ export default function Memberships() {
 
 
 
+
+
+                    </div>
+                </div>
+            )}
 
             {/* =================================================
 
