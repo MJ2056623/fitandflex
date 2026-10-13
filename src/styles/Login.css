@@ -124,6 +124,41 @@ body{
 
 }
 
+/* Password show/hide button */
+.password-input-group {
+    display: flex;
+    align-items: center;
+    position: relative;
+}
+
+.password-input-group input {
+    flex: 1;
+    min-width: 0;
+}
+
+.password-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 6px 10px;
+    border: none;
+    background: transparent;
+    color: #555;
+    cursor: pointer;
+    font-size: 16px;
+}
+
+.password-toggle:hover {
+    color: #212529;
+}
+
+.password-toggle:focus-visible {
+    outline: 2px solid #0d6efd;
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
 /* ===========================
    CARD
 =========================== */
@@ -302,41 +337,6 @@ padding:30px;
 
 max-width:100%;
 
-}
-
-/* Password show/hide button */
-.password-input-group {
-    display: flex;
-    align-items: center;
-    position: relative;
-}
-
-.password-input-group input {
-    flex: 1;
-    min-width: 0;
-}
-
-.password-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    padding: 6px 10px;
-    border: none;
-    background: transparent;
-    color: #555;
-    cursor: pointer;
-    font-size: 16px;
-}
-
-.password-toggle:hover {
-    color: #212529;
-}
-
-.password-toggle:focus-visible {
-    outline: 2px solid #0d6efd;
-    outline-offset: 2px;
-    border-radius: 4px;
 }
 
 }
