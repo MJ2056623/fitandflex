@@ -1477,14 +1477,6 @@ export default function MembershipPlans() {
                         style={{ position: "relative", width: "100%", maxWidth: "1000px", maxHeight: "90vh", overflowY: "auto" }}
                         onClick={(event) => event.stopPropagation()}
                     >
-                        <button type="button" className="btn btn-secondary"
-                            onClick={() => setShowCreateModal(false)}
-                            style={{ position: "sticky", top: 0, float: "right", zIndex: 2, margin: "8px" }}
-                        >Close</button>
-
-
-
-
                 <div className="card shadow-sm border-0 mb-4">
 
 
@@ -2065,13 +2057,11 @@ export default function MembershipPlans() {
 
 
 
-                                <button
-
-                                    type="submit"
-
-                                    className="btn btn-dark"
-
-                                >
+                                <div className="d-flex gap-2 flex-wrap">
+                                    <button
+                                        type="submit"
+                                        className="btn btn-dark"
+                                    >
 
 
 
@@ -2084,12 +2074,16 @@ export default function MembershipPlans() {
 
 
                                     Add Plan
+                                    </button>
 
-
-
-                                </button>
-
-
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={() => setShowCreateModal(false)}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
 
                             </form>
 
