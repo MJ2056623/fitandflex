@@ -86,41 +86,28 @@ export default function Login() {
                         </div>
 
                         {/* PASSWORD WITH SHOW/HIDE BUTTON */}
-                        <div className="input-group-custom password-input-group">
-                            <FaLock />
+                        
+<div className="password-input-wrapper">
+    <FaLock className="input-icon" />
 
-                            <input
-                                type={showPassword ? "text" : "password"}
-                                placeholder="Password"
-                                value={password}
-                                onChange={(e) =>
-                                    setPassword(e.target.value)
-                                }
-                                autoComplete="current-password"
-                                required
-                            />
+    <input
+        type={showPassword ? "text" : "password"}
+        name="password"
+        placeholder="Password"
+        value={password}
+        onChange={(e) => setPassword(e.target.value)}
+        required
+    />
 
-                            <button
-                                type="button"
-                                className="password-toggle"
-                                onClick={() =>
-                                    setShowPassword((previous) => !previous)
-                                }
-                                aria-label={
-                                    showPassword
-                                        ? "Hide password"
-                                        : "Show password"
-                                }
-                                aria-pressed={showPassword}
-                                title={
-                                    showPassword
-                                        ? "Hide password"
-                                        : "Show password"
-                                }
-                            >
-                                {showPassword ? <FaEyeSlash /> : <FaEye />}
-                            </button>
-                        </div>
+    <button
+        type="button"
+        className="password-toggle"
+        onClick={() => setShowPassword((prev) => !prev)}
+        aria-label={showPassword ? "Hide password" : "Show password"}
+    >
+        {showPassword ? <FaEyeSlash /> : <FaEye />}
+    </button>
+</div>
 
                         <button type="submit" className="login-btn">
                             LOGIN
