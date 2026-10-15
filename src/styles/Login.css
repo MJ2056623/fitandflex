@@ -125,10 +125,9 @@ body{
 }
 
 /* Password show/hide button */
-.password-input-group {
-    display: flex;
-    align-items: center;
+.input-group-custom.password-group {
     position: relative;
+    padding-right: 50px; /* space for the eye button */
 }
 
 .password-input-group input {
@@ -137,24 +136,31 @@ body{
 }
 
 .password-toggle {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
     display: flex;
     align-items: center;
     justify-content: center;
-    flex-shrink: 0;
-    padding: 6px 10px;
+    width: 36px;
+    height: 36px;
     border: none;
     background: transparent;
-    color: #555;
+    color: #081C45;
     cursor: pointer;
     font-size: 16px;
+    border-radius: 8px;
+    transition: color 0.2s, background 0.2s;
 }
 
 .password-toggle:hover {
-    color: #212529;
+    color: #000;
+    background: rgba(8, 28, 69, 0.06);
 }
 
 .password-toggle:focus-visible {
-    outline: 2px solid #0d6efd;
+    outline: 2px solid #081C45;
     outline-offset: 2px;
     border-radius: 4px;
 }

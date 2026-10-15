@@ -87,18 +87,16 @@ export default function Login() {
 
                         {/* PASSWORD WITH SHOW/HIDE BUTTON */}
                         
-<div className="password-input-wrapper">
-    <FaLock className="input-icon" />
-
+<div className="input-group-custom password-group">
+    <FaLock />
     <input
         type={showPassword ? "text" : "password"}
-        name="password"
         placeholder="Password"
         value={password}
         onChange={(e) => setPassword(e.target.value)}
+        autoComplete="current-password"
         required
     />
-
     <button
         type="button"
         className="password-toggle"
