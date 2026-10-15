@@ -375,77 +375,75 @@ export default function Members() {
                         </thead>
 
                         <tbody>
-                            {filteredMembers.length === 0 ? (
-                                <tr>
-                                    <td colSpan="8" className="text-center py-4">
-                                        No members found.
-                                    </td>
-                                </tr>
-                            ) : (
-                                filteredMembers.map((member) => (
-                                    <tr key={member.memberID}>
-                                        <td>{member.memberID}</td>
+    {filteredMembers.length === 0 ? (
+        <tr>
+            <td colSpan="8" className="text-center py-4">
+                No members found.
+            </td>
+        </tr>
+    ) : (
+        filteredMembers.map((member) => (
+            <tr key={member.memberID}>
+                <td>{member.memberID}</td>
 
-                                        <td>
-                                            <strong>
-                                                {member.firstName} {member.lastName}
-                                            </strong>
-                                        </td>
+                <td>
+                    <strong>
+                        {member.firstName} {member.lastName}
+                    </strong>
+                </td>
 
-                                        <td>{member.gender}</td>
-                                        <td>{member.email}</td>
-                                        <td>{member.phone}</td>
+                <td>{member.gender}</td>
+                <td>{member.email}</td>
+                <td>{member.phone}</td>
 
-                                        <td style={{ maxWidth: "250px", whiteSpace: "normal" }}>
-                                            {member.address}
-                                        </td>
+                <td style={{ maxWidth: "250px", whiteSpace: "normal" }}>
+                    {member.address}
+                </td>
 
-                                        <td>
-                                            
-<span
-    className={`badge ${
-        item.status?.toLowerCase() === "active"
-            ? "bg-success"
-            : "bg-danger"
-    }`}
-    style={{
-        padding: "5px 10px",
-        borderRadius: "6px",
-        fontSize: "12px",
-        fontWeight: 600,
-        color: "#fff",
-    }}
->
-    {item.status}
-</span>
+                <td>
+                    <span
+                        className={`badge ${
+                            (member.status || "").toLowerCase() === "active"
+                                ? "bg-success"
+                                : "bg-danger"
+                        }`}
+                        style={{
+                            padding: "5px 10px",
+                            borderRadius: "6px",
+                            fontSize: "12px",
+                            fontWeight: 600,
+                            color: "#fff",
+                        }}
+                    >
+                        {member.status || "Inactive"}
+                    </span>
+                </td>
 
-                                        </td>
+                <td>
+                    <button
+                        type="button"
+                        className="btn btn-warning btn-sm me-2"
+                        onClick={() => editMember(member)}
+                        title="Edit Member"
+                    >
+                        <FaEdit />
+                    </button>
 
-                                        <td>
-                                            <button
-                                                type="button"
-                                                className="btn btn-warning btn-sm me-2"
-                                                onClick={() => editMember(member)}
-                                                title="Edit Member"
-                                            >
-                                                <FaEdit />
-                                            </button>
-
-                                            {role === "Admin" && (
-                                                <button
-                                                    type="button"
-                                                    className="btn btn-danger btn-sm"
-                                                    onClick={() => deleteMember(member.memberID)}
-                                                    title="Delete Member"
-                                                >
-                                                    <FaTrash />
-                                                </button>
-                                            )}
-                                        </td>
-                                    </tr>
-                                ))
-                            )}
-                        </tbody>
+                    {role === "Admin" && (
+                        <button
+                            type="button"
+                            className="btn btn-danger btn-sm"
+                            onClick={() => deleteMember(member.memberID)}
+                            title="Delete Member"
+                        >
+                            <FaTrash />
+                        </button>
+                    )}
+                </td>
+            </tr>
+        ))
+    )}
+</tbody>
                     </table>
                 </div>
             </div>
