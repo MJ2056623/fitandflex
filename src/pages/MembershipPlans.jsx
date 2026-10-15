@@ -1,3275 +1,576 @@
+
 import { useEffect, useState } from "react";
-
 import DashboardLayout from "../layouts/DashboardLayout";
-
 import api from "../api/api";
 
-
-
 import {
-
-    FaClipboardList,
-
-    FaPlus,
-
+    FaUsers,
+    FaUserPlus,
     FaEdit,
-
     FaTrash,
-
     FaSearch
-
 } from "react-icons/fa";
 
-
-
-import "../styles/form.css";
-
-
-
-
-
-// ==========================================
-
-// AUTOMATIC PRICING
-
-// ==========================================
-
-
-
-const MONTHLY_PRICE = 3000;
-
-const WALK_IN_PRICE = 100;
-
-
-
-
-
-export default function MembershipPlans() {
-
-
-
+export default function Members() {
     const role = localStorage.getItem("role");
 
+    const emptyMember = {
+        firstName: "",
+        lastName: "",
+        gender: "",
+        birthDate: "",
+        phone: "",
+        email: "",
+        address: ""
+    };
 
-
-    const [plans, setPlans] = useState([]);
-
-
-
+    const [members, setMembers] = useState([]);
     const [search, setSearch] = useState("");
-
-
-
-
-
-    // ==========================================
-
-    // ADD PLAN FORM
-
-    // ==========================================
-
-
-
-    const [form, setForm] = useState({
-
-
-
-        planName: "",
-
-
-
-        durationMonths: "",
-
-
-
-        price: ""
-
-
-
-    });
-
-
-
-
-
-    // ==========================================
-
-    // EDIT PLAN
-
-    // ==========================================
-
-
-
+    const [form, setForm] = useState(emptyMember);
+    const [editForm, setEditForm] = useState(emptyMember);
     const [editingId, setEditingId] = useState(null);
-
     const [showCreateModal, setShowCreateModal] = useState(false);
 
-
-
-    const [editForm, setEditForm] = useState({
-
-
-
-        planName: "",
-
-
-
-        durationMonths: "",
-
-
-
-        price: ""
-
-
-
-    });
-
-
-
-
-
-    // ==========================================
-
-    // LOAD PLANS
-
-    // ==========================================
-
-
-
     useEffect(() => {
-
-
-
-        loadPlans();
-
-
-
+        loadMembers();
     }, []);
 
-
-
-
-
-    async function loadPlans() {
-
-
-
+    async function loadMembers() {
         try {
-
-
-
-            const res =
-
-                await api.get("/MembershipPlans");
-
-
-
-            setPlans(res.data);
-
-
-
-        }
-
-        catch (err) {
-
-
-
+            const res = await api.get("/Members");
+            setMembers(res.data);
+        } catch (err) {
             console.log(err);
-
-
-
         }
-
-
-
     }
-
-
-
-
-
-    // ==========================================
-
-    // AUTOMATIC PRICE CALCULATION
-
-    // ==========================================
-
-
-
-    function getDefaultPrice(
-
-        planName,
-
-        durationMonths
-
-    ) {
-
-
-
-        const duration =
-
-            Number(durationMonths);
-
-
-
-
-
-        // WALK-IN
-
-
-
-        if (planName === "Walk-in") {
-
-
-
-            return WALK_IN_PRICE;
-
-
-
-        }
-
-
-
-
-
-        // MONTHLY / YEARLY
-
-
-
-        if (
-
-            planName === "Monthly" ||
-
-            planName === "Yearly"
-
-        ) {
-
-
-
-            if (
-
-                !duration ||
-
-                duration <= 0
-
-            ) {
-
-
-
-                return "";
-
-
-
-            }
-
-
-
-            return duration * MONTHLY_PRICE;
-
-
-
-        }
-
-
-
-
-
-        return "";
-
-
-
-    }
-
-
-
-
-
-    // ==========================================
-
-    // ADD FORM CHANGE
-
-    // ==========================================
-
-
 
     function handleChange(e) {
+        const { name, value } = e.target;
 
+        if (name === "phone") {
+            const numbersOnly = value.replace(/\D/g, "");
+            if (numbersOnly.length > 11) return;
 
-
-        const {
-
-            name,
-
-            value
-
-        } = e.target;
-
-
-
-
-
-        // MEMBERSHIP TYPE
-
-
-
-        if (name === "planName") {
-
-
-
-            if (value === "Walk-in") {
-
-
-
-                setForm({
-
-
-
-                    planName: "Walk-in",
-
-
-
-                    durationMonths: "0",
-
-
-
-                    price: WALK_IN_PRICE
-
-
-
-                });
-
-
-
-                return;
-
-
-
-            }
-
-
-
-
-
-            setForm({
-
-
-
-                planName: value,
-
-
-
-                durationMonths: "",
-
-
-
-                price: ""
-
-
-
-            });
-
-
-
+            setForm({ ...form, phone: numbersOnly });
             return;
-
-
-
         }
 
-
-
-
-
-        // DURATION
-
-
-
-        if (
-
-            name === "durationMonths"
-
-        ) {
-
-
-
-            const automaticPrice =
-
-                getDefaultPrice(
-
-                    form.planName,
-
-                    value
-
-                );
-
-
-
-
-
-            setForm({
-
-
-
-                ...form,
-
-
-
-                durationMonths: value,
-
-
-
-                price: automaticPrice
-
-
-
-            });
-
-
-
-            return;
-
-
-
-        }
-
-
-
+        setForm({ ...form, [name]: value });
     }
-
-
-
-
-
-    // ==========================================
-
-    // ADD PLAN
-
-    // ==========================================
-
-
-
-    async function savePlan(e) {
-
-
-
-        e.preventDefault();
-
-
-
-
-
-        if (!form.planName) {
-
-
-
-            alert(
-
-                "Please select a membership type."
-
-            );
-
-
-
-            return;
-
-
-
-        }
-
-
-
-
-
-        if (
-
-            form.planName !== "Walk-in" &&
-
-            !form.durationMonths
-
-        ) {
-
-
-
-            alert(
-
-                "Please select a duration."
-
-            );
-
-
-
-            return;
-
-
-
-        }
-
-
-
-
-
-        if (
-
-            form.price === "" ||
-
-            form.price === null ||
-
-            form.price === undefined
-
-        ) {
-
-
-
-            alert(
-
-                "Please select a duration first."
-
-            );
-
-
-
-            return;
-
-
-
-        }
-
-
-
-
-
-        try {
-
-
-
-            const payload = {
-
-
-
-                planName:
-
-                    form.planName,
-
-
-
-                durationMonths:
-
-                    form.planName === "Walk-in"
-
-                        ? 0
-
-                        : Number(
-
-                            form.durationMonths
-
-                        ),
-
-
-
-                price:
-
-                    Number(form.price)
-
-
-
-            };
-
-
-
-
-
-            await api.post(
-
-                "/MembershipPlans",
-
-                payload
-
-            );
-
-
-
-
-
-            alert(
-
-                "Membership plan added successfully."
-
-            );
-
-
-
-
-
-            resetAddForm();
-
-
-
-            loadPlans();
-
-
-
-        }
-
-        catch (err) {
-
-
-
-            console.log(err);
-
-
-
-
-
-            if (err.response) {
-
-
-
-                const message =
-
-                    typeof err.response.data === "string"
-
-                        ? err.response.data
-
-                        : "Unable to add membership plan.";
-
-
-
-                alert(message);
-
-
-
-            }
-
-            else {
-
-
-
-                alert(
-
-                    "Unable to add membership plan."
-
-                );
-
-
-
-            }
-
-
-
-        }
-
-
-
-    }
-
-
-
-
-
-    // ==========================================
-
-    // RESET ADD FORM
-
-    // ==========================================
-
-
-
-    function resetAddForm() {
-
-
-
-        setForm({
-
-
-
-            planName: "",
-
-
-
-            durationMonths: "",
-
-
-
-            price: ""
-
-
-
-        });
-
-
-
-    }
-
-
-
-
-
-    // ==========================================
-
-    // OPEN EDIT MODAL
-
-    // ==========================================
-
-
-
-    function editPlan(plan) {
-
-
-
-        setEditingId(
-
-            plan.planID
-
-        );
-
-
-
-
-
-        setEditForm({
-
-
-
-            planName:
-
-                plan.planName,
-
-
-
-            durationMonths:
-
-                plan.planName === "Walk-in"
-
-                    ? "0"
-
-                    : String(
-
-                        plan.durationMonths
-
-                    ),
-
-
-
-            // IMPORTANT:
-
-            // Keep the existing database price.
-
-            // Do NOT recalculate it here.
-
-            price:
-
-                plan.price
-
-
-
-        });
-
-
-
-    }
-
-
-
-
-
-    // ==========================================
-
-    // EDIT FORM CHANGE
-
-    // ==========================================
-
-
 
     function handleEditChange(e) {
+        const { name, value } = e.target;
 
+        if (name === "phone") {
+            const numbersOnly = value.replace(/\D/g, "");
+            if (numbersOnly.length > 11) return;
 
-
-        const {
-
-            name,
-
-            value
-
-        } = e.target;
-
-
-
-
-
-        // MEMBERSHIP TYPE
-
-
-
-        if (name === "planName") {
-
-
-
-            if (value === "Walk-in") {
-
-
-
-                setEditForm({
-
-
-
-                    planName: "Walk-in",
-
-
-
-                    durationMonths: "0",
-
-
-
-                    price: WALK_IN_PRICE
-
-
-
-                });
-
-
-
-                return;
-
-
-
-            }
-
-
-
-
-
-            setEditForm({
-
-
-
-                planName: value,
-
-
-
-                durationMonths: "",
-
-
-
-                price: ""
-
-
-
-            });
-
-
-
+            setEditForm({ ...editForm, phone: numbersOnly });
             return;
-
-
-
         }
 
-
-
-
-
-        // DURATION
-
-
-
-        if (
-
-            name === "durationMonths"
-
-        ) {
-
-
-
-            const automaticPrice =
-
-                getDefaultPrice(
-
-                    editForm.planName,
-
-                    value
-
-                );
-
-
-
-
-
-            setEditForm({
-
-
-
-                ...editForm,
-
-
-
-                durationMonths: value,
-
-
-
-                price: automaticPrice
-
-
-
-            });
-
-
-
-            return;
-
-
-
-        }
-
-
-
-
-
-        // PRICE
-
-        // ONLY THE EDIT FORM CAN
-
-        // MANUALLY CHANGE PRICE
-
-
-
-        if (name === "price") {
-
-
-
-            setEditForm({
-
-
-
-                ...editForm,
-
-
-
-                price: value
-
-
-
-            });
-
-
-
-        }
-
-
-
+        setEditForm({ ...editForm, [name]: value });
     }
 
+    function closeCreateModal() {
+        setShowCreateModal(false);
+        setForm({ ...emptyMember });
+    }
 
-
-
-
-    // ==========================================
-
-    // UPDATE PLAN
-
-    // ==========================================
-
-
-
-    async function updatePlan(e) {
-
-
-
+    async function saveMember(e) {
         e.preventDefault();
 
-
-
-
-
-        if (editingId === null) {
-
-
-
-            return;
-
-
-
-        }
-
-
-
-
-
-        if (!editForm.planName) {
-
-
-
-            alert(
-
-                "Please select a membership type."
-
-            );
-
-
-
-            return;
-
-
-
-        }
-
-
-
-
-
-        if (
-
-            editForm.planName !== "Walk-in" &&
-
-            !editForm.durationMonths
-
-        ) {
-
-
-
-            alert(
-
-                "Please select a duration."
-
-            );
-
-
-
-            return;
-
-
-
-        }
-
-
-
-
-
-        if (
-
-            editForm.price === "" ||
-
-            editForm.price === null ||
-
-            editForm.price === undefined
-
-        ) {
-
-
-
-            alert(
-
-                "Please enter a valid price."
-
-            );
-
-
-
-            return;
-
-
-
-        }
-
-
-
-
-
         try {
-
-
-
-            const payload = {
-
-
-
-                planName:
-
-                    editForm.planName,
-
-
-
-                durationMonths:
-
-                    editForm.planName === "Walk-in"
-
-                        ? 0
-
-                        : Number(
-
-                            editForm.durationMonths
-
-                        ),
-
-
-
-                price:
-
-                    Number(editForm.price)
-
-
-
-            };
-
-
-
-
-
-            await api.put(
-
-                `/MembershipPlans/${editingId}`,
-
-                payload
-
-            );
-
-
-
-
-
-            alert(
-
-                "Membership plan updated successfully."
-
-            );
-
-
-
-
-
-            cancelEdit();
-
-
-
-            loadPlans();
-
-
-
-        }
-
-        catch (err) {
-
-
-
+            await api.post("/Members", form);
+            closeCreateModal();
+            await loadMembers();
+        } catch (err) {
             console.log(err);
-
-
-
-
 
             if (err.response) {
-
-
-
-                const message =
-
-                    typeof err.response.data === "string"
-
-                        ? err.response.data
-
-                        : "Unable to update membership plan.";
-
-
-
-                alert(message);
-
-
-
+                alert(err.response.data);
+            } else {
+                alert("Unable to add member.");
             }
-
-            else {
-
-
-
-                alert(
-
-                    "Unable to update membership plan."
-
-                );
-
-
-
-            }
-
-
-
         }
-
-
-
     }
 
-
-
-
-
-    // ==========================================
-
-    // CANCEL EDIT
-
-    // ==========================================
-
-
-
-    function cancelEdit() {
-
-
-
-        setEditingId(null);
-
-
-
-
+    function editMember(member) {
+        setEditingId(member.memberID);
 
         setEditForm({
-
-
-
-            planName: "",
-
-
-
-            durationMonths: "",
-
-
-
-            price: ""
-
-
-
+            firstName: member.firstName || "",
+            lastName: member.lastName || "",
+            gender: member.gender || "",
+            birthDate: member.birthDate
+                ? member.birthDate.substring(0, 10)
+                : "",
+            phone: member.phone || "",
+            email: member.email || "",
+            address: member.address || ""
         });
-
-
-
     }
 
-
-
-
-
-    // ==========================================
-
-    // DELETE PLAN
-
-    // ==========================================
-
-
-
-    async function deletePlan(id) {
-
-
-
-        if (
-
-            !window.confirm(
-
-                "Delete this membership plan?"
-
-            )
-
-        ) {
-
-
-
-            return;
-
-
-
-        }
-
-
-
-
+    async function updateMember(e) {
+        e.preventDefault();
 
         try {
-
-
-
-            await api.delete(
-
-                `/MembershipPlans/${id}`
-
-            );
-
-
-
-
-
-            loadPlans();
-
-
-
-        }
-
-        catch (err) {
-
-
-
+            await api.put(`/Members/${editingId}`, editForm);
+            cancelEdit();
+            await loadMembers();
+        } catch (err) {
             console.log(err);
 
-
-
-            alert(
-
-                "Unable to delete membership plan."
-
-            );
-
-
-
+            if (err.response) {
+                alert(err.response.data);
+            } else {
+                alert("Unable to update member.");
+            }
         }
-
-
-
     }
 
-
-
-
-
-    // ==========================================
-
-    // SEARCH
-
-    // ==========================================
-
-
-
-    const filteredPlans =
-
-        plans.filter(plan => {
-
-
-
-            const planName =
-
-                plan.planName || "";
-
-
-
-            return planName
-
-                .toLowerCase()
-
-                .includes(
-
-                    search.toLowerCase()
-
-                );
-
-
-
-        });
-
-
-
-
-
-    // ==========================================
-
-    // RENDER
-
-    // ==========================================
-
-
-
-    return (
-
-
-
-        <DashboardLayout>
-
-
-
-            <div className="page-container">
-
-
-
-
-
-                {/* ==================================
-
-                    PAGE HEADER
-
-                ================================== */}
-
-
-
-                <div className="page-header">
-
-
-
-                    <div>
-
-
-
-                        <h1 className="page-title">
-
-
-
-                            <FaClipboardList
-
-                                className="me-2"
-
-                            />
-
-
-
-                            Membership Plans
-
-
-
-                        </h1>
-
-
-
-
-
-                        <p className="page-subtitle">
-
-
-
-                            Manage available gym
-
-                            membership plans.
-
-
-
-                        </p>
-
-
-
-                    </div>
-
-
-
-                </div>
-
-
-
-
-
-
-
-                {role === "Admin" && (
-                    <div className="d-flex justify-content-end mb-3">
-                        <button type="button" className="btn btn-dark" onClick={() => setShowCreateModal(true)}>+ Add Plan</button>
-                    </div>
-                )}
-
-                {/* ==================================
-
-                    ADD PLAN
-
-                ================================== */}
-
-            {showCreateModal && (
-                <div
-                    role="presentation"
-                    style={{
-                        position: "fixed", inset: 0, backgroundColor: "rgba(0,0,0,0.55)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        zIndex: 1050, padding: "20px", overflowY: "auto"
-                    }}
-                    onClick={() => setShowCreateModal(false)}
-                >
-                    <div
-                        role="dialog" aria-modal="true" aria-label="Add Plan"
-                        style={{ position: "relative", width: "100%", maxWidth: "1000px", maxHeight: "90vh", overflowY: "auto" }}
-                        onClick={(event) => event.stopPropagation()}
-                    >
-                <div className="card shadow-sm border-0 mb-4">
-
-
-
-                    <div className="card-body">
-
-
-
-                        {role === "Admin" && (
-
-
-
-                            <form
-
-                                onSubmit={savePlan}
-
-                            >
-
-
-
-                                <div className="row">
-
-
-
-
-
-                                    {/* PLAN NAME */}
-
-
-
-                                    <div className="col-md-4 mb-3">
-
-
-
-                                        <label className="form-label">
-
-
-
-                                            Plan Name
-
-
-
-                                        </label>
-
-
-
-
-
-                                        <select
-
-                                            className="form-select"
-
-                                            name="planName"
-
-                                            value={form.planName}
-
-                                            onChange={handleChange}
-
-                                            required
-
-                                        >
-
-
-
-                                            <option value="">
-
-
-
-                                                Select Plan
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="Monthly">
-
-
-
-                                                Monthly
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="Yearly">
-
-
-
-                                                Yearly
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="Walk-in">
-
-
-
-                                                Walk-in
-
-
-
-                                            </option>
-
-
-
-                                        </select>
-
-
-
-                                    </div>
-
-
-
-
-
-                                    {/* DURATION */}
-
-
-
-                                    <div className="col-md-4 mb-3">
-
-
-
-                                        <label className="form-label">
-
-
-
-                                            Duration
-
-
-
-                                        </label>
-
-
-
-
-
-                                        <select
-
-                                            className="form-select"
-
-                                            name="durationMonths"
-
-                                            value={
-
-                                                form.durationMonths
-
-                                            }
-
-                                            onChange={
-
-                                                handleChange
-
-                                            }
-
-                                            disabled={
-
-                                                !form.planName ||
-
-                                                form.planName === "Walk-in"
-
-                                            }
-
-                                            required={
-
-                                                form.planName !== "Walk-in"
-
-                                            }
-
-                                        >
-
-
-
-                                            <option value="">
-
-
-
-                                                Select Duration
-
-
-
-                                            </option>
-
-
-
-
-
-                                            {/* MONTHLY */}
-
-
-
-                                            {form.planName === "Monthly" && (
-
-
-
-                                                <>
-
-
-
-                                                    <option value="1">
-
-
-
-                                                        1 Month
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="2">
-
-
-
-                                                        2 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="3">
-
-
-
-                                                        3 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="4">
-
-
-
-                                                        4 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="5">
-
-
-
-                                                        5 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="6">
-
-
-
-                                                        6 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="7">
-
-
-
-                                                        7 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="8">
-
-
-
-                                                        8 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="9">
-
-
-
-                                                        9 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="10">
-
-
-
-                                                        10 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="11">
-
-
-
-                                                        11 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="12">
-
-
-
-                                                        12 Months
-
-
-
-                                                    </option>
-
-
-
-                                                </>
-
-
-
-                                            )}
-
-
-
-
-
-                                            {/* YEARLY */}
-
-
-
-                                            {form.planName === "Yearly" && (
-
-
-
-                                                <>
-
-
-
-                                                    <option value="12">
-
-
-
-                                                        12 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="24">
-
-
-
-                                                        24 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="36">
-
-
-
-                                                        36 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="48">
-
-
-
-                                                        48 Months
-
-
-
-                                                    </option>
-
-
-
-
-
-                                                    <option value="60">
-
-
-
-                                                        60 Months
-
-
-
-                                                    </option>
-
-
-
-                                                </>
-
-
-
-                                            )}
-
-
-
-
-
-                                            {/* WALK-IN */}
-
-
-
-                                            {form.planName === "Walk-in" && (
-
-
-
-                                                <option value="0">
-
-
-
-                                                    Walk-in
-
-
-
-                                                </option>
-
-
-
-                                            )}
-
-
-
-                                        </select>
-
-
-
-                                    </div>
-
-
-
-
-
-                                    {/* PRICE */}
-
-
-
-                                    <div className="col-md-4 mb-3">
-
-
-
-                                        <label className="form-label">
-
-
-
-                                            Price (₱)
-
-
-
-                                        </label>
-
-
-
-
-
-                                        <input
-
-                                            type="number"
-
-                                            className="form-control"
-
-                                            value={
-
-                                                form.price
-
-                                            }
-
-                                            readOnly
-
-                                        />
-
-
-
-
-
-                                        <small className="text-muted">
-
-
-
-                                            Price is automatically
-
-                                            calculated from the
-
-                                            selected plan and duration.
-
-
-
-                                        </small>
-
-
-
-                                    </div>
-
-
-
-                                </div>
-
-
-
-
-
-                                <div className="d-flex gap-2 flex-wrap">
-                                    <button
-                                        type="submit"
-                                        className="btn btn-dark"
-                                    >
-
-
-
-                                    <FaPlus
-
-                                        className="me-2"
-
-                                    />
-
-
-
-                                    Add Plan
-                                    </button>
-
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={() => setShowCreateModal(false)}
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-
-                            </form>
-
-
-
-                        )}
-
-
-
-                    </div>
-
-
-
-                </div>
-
-
-
-
-
-
-                    </div>
-                </div>
-            )}
-
-                {/* ==================================
-
-                    MEMBERSHIP PLANS TABLE
-
-                ================================== */}
-
-
-
-                <div className="card shadow-sm border-0">
-
-
-
-                    <div className="card-header bg-white">
-
-
-
-                        <div className="d-flex justify-content-between align-items-center">
-
-
-
-                            <h5 className="mb-0">
-
-
-
-                                <FaClipboardList
-
-                                    className="me-2"
-
-                                />
-
-
-
-                                Membership Plans
-
-
-
-                            </h5>
-
-
-
-
-
-                            <div className="search-box">
-
-
-
-                                <FaSearch
-
-                                    className="search-icon"
-
-                                />
-
-
-
-
-
-                                <input
-
-                                    className="form-control"
-
-                                    placeholder="Search plan..."
-
-                                    value={search}
-
-                                    onChange={
-
-                                        e =>
-
-                                            setSearch(
-
-                                                e.target.value
-
-                                            )
-
-                                    }
-
-                                />
-
-
-
-                            </div>
-
-
-
-                        </div>
-
-
-
-                    </div>
-
-
-
-
-
-                    <div className="table-responsive">
-
-
-
-                        <table className="table table-hover align-middle mb-0">
-
-
-
-                            <thead className="table-light">
-
-
-
-                                <tr>
-
-
-
-                                    <th>
-
-                                        ID
-
-                                    </th>
-
-
-
-                                    <th>
-
-                                        Plan Name
-
-                                    </th>
-
-
-
-                                    <th>
-
-                                        Duration
-
-                                    </th>
-
-
-
-                                    <th>
-
-                                        Price
-
-                                    </th>
-
-
-
-                                    <th>
-
-                                        Action
-
-                                    </th>
-
-
-
-                                </tr>
-
-
-
-                            </thead>
-
-
-
-
-
-                            <tbody>
-
-
-
-                                {filteredPlans.length === 0 ? (
-
-
-
-                                    <tr>
-
-
-
-                                        <td
-
-                                            colSpan="5"
-
-                                            className="text-center py-5"
-
-                                        >
-
-
-
-                                            No membership
-
-                                            plans found.
-
-
-
-                                        </td>
-
-
-
-                                    </tr>
-
-
-
-                                ) : (
-
-
-
-                                    filteredPlans.map(
-
-                                        plan => (
-
-
-
-                                            <tr
-
-                                                key={
-
-                                                    plan.planID
-
-                                                }
-
-                                            >
-
-
-
-                                                <td>
-
-
-
-                                                    {plan.planID}
-
-
-
-                                                </td>
-
-
-
-
-
-                                                <td>
-
-
-
-                                                    <strong>
-
-
-
-                                                        {
-
-                                                            plan.planName
-
-                                                        }
-
-
-
-                                                    </strong>
-
-
-
-                                                </td>
-
-
-
-
-
-                                                <td>
-
-
-
-                                                    {
-
-                                                        plan.planName ===
-
-                                                        "Walk-in"
-
-                                                            ? "0 month(s)"
-
-                                                            : `${plan.durationMonths} month(s)`
-
-                                                    }
-
-
-
-                                                </td>
-
-
-
-
-
-                                                <td>
-
-
-
-                                                    ₱
-
-                                                    {Number(
-
-                                                        plan.price
-
-                                                    ).toLocaleString()}
-
-
-
-                                                </td>
-
-
-
-
-
-                                                <td>
-
-
-
-                                                    {role === "Admin" && (
-
-
-
-                                                        <>
-
-
-
-                                                            {/* EDIT */}
-
-
-
-                                                            <button
-
-                                                                type="button"
-
-                                                                className="btn btn-warning btn-sm me-2"
-
-                                                                onClick={() =>
-
-                                                                    editPlan(
-
-                                                                        plan
-
-                                                                    )
-
-                                                                }
-
-                                                                title="Edit Plan"
-
-                                                            >
-
-
-
-                                                                <FaEdit />
-
-
-
-                                                            </button>
-
-
-
-
-
-                                                            {/* DELETE */}
-
-
-
-                                                            <button
-
-                                                                type="button"
-
-                                                                className="btn btn-danger btn-sm"
-
-                                                                onClick={() =>
-
-                                                                    deletePlan(
-
-                                                                        plan.planID
-
-                                                                    )
-
-                                                                }
-
-                                                                title="Delete Plan"
-
-                                                            >
-
-
-
-                                                                <FaTrash />
-
-
-
-                                                            </button>
-
-
-
-                                                        </>
-
-
-
-                                                    )}
-
-
-
-                                                </td>
-
-
-
-                                            </tr>
-
-
-
-                                        )
-
-                                    )
-
-
-
-                                )}
-
-
-
-                            </tbody>
-
-
-
-                        </table>
-
-
-
-                    </div>
-
-
-
-                </div>
-
-
-
-
-
-            </div>
-
-
-
-
-
-            {/* =========================================
-
-                EDIT PLAN MODAL
-
-            ========================================= */}
-
-
-
-            {editingId !== null && role === "Admin" && (
-
-
-
-                <div className="edit-modal-overlay">
-
-
-
-                    <div className="edit-modal">
-
-
-
-
-
-                        {/* MODAL HEADER */}
-
-
-
-                        <div className="edit-modal-header">
-
-
-
-                            <h3>
-
-
-
-                                <FaEdit
-
-                                    className="me-2"
-
-                                />
-
-
-
-                                Edit Membership Plan
-
-
-
-                            </h3>
-
-
-
-                        </div>
-
-
-
-
-
-                        {/* EDIT FORM */}
-
-
-
-                        <form
-
-                            onSubmit={updatePlan}
-
-                        >
-
-
-
-
-
-                            {/* PLAN NAME */}
-
-
-
-                            <div className="edit-form-group">
-
-
-
-                                <label className="form-label">
-
-
-
-                                    Plan Name
-
-
-
-                                </label>
-
-
-
-
-
-                                <select
-
-                                    className="form-select"
-
-                                    name="planName"
-
-                                    value={
-
-                                        editForm.planName
-
-                                    }
-
-                                    onChange={
-
-                                        handleEditChange
-
-                                    }
-
-                                    required
-
-                                >
-
-
-
-                                    <option value="">
-
-
-
-                                        Select Plan
-
-
-
-                                    </option>
-
-
-
-
-
-                                    <option value="Monthly">
-
-
-
-                                        Monthly
-
-
-
-                                    </option>
-
-
-
-
-
-                                    <option value="Yearly">
-
-
-
-                                        Yearly
-
-
-
-                                    </option>
-
-
-
-
-
-                                    <option value="Walk-in">
-
-
-
-                                        Walk-in
-
-
-
-                                    </option>
-
-
-
-                                </select>
-
-
-
-                            </div>
-
-
-
-
-
-                            {/* DURATION */}
-
-
-
-                            <div className="edit-form-group">
-
-
-
-                                <label className="form-label">
-
-
-
-                                    Duration
-
-
-
-                                </label>
-
-
-
-
-
-                                <select
-
-                                    className="form-select"
-
-                                    name="durationMonths"
-
-                                    value={
-
-                                        editForm.durationMonths
-
-                                    }
-
-                                    onChange={
-
-                                        handleEditChange
-
-                                    }
-
-                                    disabled={
-
-                                        !editForm.planName ||
-
-                                        editForm.planName === "Walk-in"
-
-                                    }
-
-                                    required={
-
-                                        editForm.planName !== "Walk-in"
-
-                                    }
-
-                                >
-
-
-
-                                    <option value="">
-
-
-
-                                        Select Duration
-
-
-
-                                    </option>
-
-
-
-
-
-                                    {/* MONTHLY */}
-
-
-
-                                    {editForm.planName === "Monthly" && (
-
-
-
-                                        <>
-
-
-
-                                            <option value="1">
-
-
-
-                                                1 Month
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="2">
-
-
-
-                                                2 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="3">
-
-
-
-                                                3 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="4">
-
-
-
-                                                4 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="5">
-
-
-
-                                                5 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="6">
-
-
-
-                                                6 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="7">
-
-
-
-                                                7 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="8">
-
-
-
-                                                8 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="9">
-
-
-
-                                                9 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="10">
-
-
-
-                                                10 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="11">
-
-
-
-                                                11 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="12">
-
-
-
-                                                12 Months
-
-
-
-                                            </option>
-
-
-
-                                        </>
-
-
-
-                                    )}
-
-
-
-
-
-                                    {/* YEARLY */}
-
-
-
-                                    {editForm.planName === "Yearly" && (
-
-
-
-                                        <>
-
-
-
-                                            <option value="12">
-
-
-
-                                                12 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="24">
-
-
-
-                                                24 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="36">
-
-
-
-                                                36 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="48">
-
-
-
-                                                48 Months
-
-
-
-                                            </option>
-
-
-
-
-
-                                            <option value="60">
-
-
-
-                                                60 Months
-
-
-
-                                            </option>
-
-
-
-                                        </>
-
-
-
-                                    )}
-
-
-
-
-
-                                    {/* WALK-IN */}
-
-
-
-                                    {editForm.planName === "Walk-in" && (
-
-
-
-                                        <option value="0">
-
-
-
-                                            Walk-in
-
-
-
-                                        </option>
-
-
-
-                                    )}
-
-
-
-                                </select>
-
-
-
-                            </div>
-
-
-
-
-
-                            {/* PRICE */}
-
-
-
-                            <div className="edit-form-group">
-
-
-
-                                <label className="form-label">
-
-
-
-                                    Price (₱)
-
-
-
-                                </label>
-
-
-
-
-
-                                <input
-
-                                    type="number"
-
-                                    className="form-control"
-
-                                    name="price"
-
-                                    value={
-
-                                        editForm.price
-
-                                    }
-
-                                    onChange={
-
-                                        handleEditChange
-
-                                    }
-
-                                    min="0"
-
-                                    step="0.01"
-
-                                    required
-
-                                />
-
-
-
-
-
-                                <small className="text-muted">
-
-
-
-                                    The automatic price can
-
-                                    be changed by the Admin
-
-                                    when editing.
-
-
-
-                                </small>
-
-
-
-                            </div>
-
-
-
-
-
-                            {/* BUTTONS */}
-
-
-
-                            <div className="edit-modal-buttons">
-
-
-
-                                <button
-
-                                    type="submit"
-
-                                    className="btn btn-dark"
-
-                                >
-
-
-
-                                    <FaEdit
-
-                                        className="me-2"
-
-                                    />
-
-
-
-                                    Update Plan
-
-
-
-                                </button>
-
-
-
-
-
-                                <button
-
-                                    type="button"
-
-                                    className="btn btn-secondary"
-
-                                    onClick={
-
-                                        cancelEdit
-
-                                    }
-
-                                >
-
-
-
-                                    Cancel
-
-
-
-                                </button>
-
-
-
-                            </div>
-
-
-
-
-
-                        </form>
-
-
-
-                    </div>
-
-
-
-                </div>
-
-
-
-            )}
-
-
-
-        </DashboardLayout>
-
-
-
+    function cancelEdit() {
+        setEditingId(null);
+        setEditForm({ ...emptyMember });
+    }
+
+    async function deleteMember(id) {
+        if (!window.confirm("Delete this member?")) return;
+
+        try {
+            await api.delete(`/Members/${id}`);
+            await loadMembers();
+        } catch (err) {
+            console.log(err);
+            alert("Unable to delete member.");
+        }
+    }
+
+    const filteredMembers = members.filter((member) =>
+        `${member.firstName} ${member.lastName}`
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+        (member.email || "")
+            .toLowerCase()
+            .includes(search.toLowerCase()) ||
+        (member.phone || "")
+            .toLowerCase()
+            .includes(search.toLowerCase())
     );
 
+    const modalOverlayStyle = {
+        position: "fixed",
+        inset: 0,
+        backgroundColor: "rgba(0,0,0,0.55)",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        zIndex: 1050,
+        padding: "24px",
+        overflowY: "auto"
+    };
 
+    const modalStyle = {
+        width: "100%",
+        maxWidth: "850px",
+        maxHeight: "90vh",
+        overflowY: "auto",
+        backgroundColor: "#fff",
+        borderRadius: "12px",
+        padding: "28px",
+        boxShadow: "0 12px 40px rgba(0,0,0,0.2)"
+    };
 
+    return (
+        <DashboardLayout>
+            {/* PAGE HEADING AND ADD BUTTON */}
+            <div className="dashboard-header d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+                <div>
+                    <h1>Members</h1>
+                    <p>Manage all registered gym members.</p>
+                </div>
+
+                <button
+                    type="button"
+                    className="btn btn-dark"
+                    onClick={() => setShowCreateModal(true)}
+                >
+                    <FaUserPlus className="me-2" />
+                    Add Member
+                </button>
+            </div>
+
+            {/* ADD MEMBER MODAL */}
+            {showCreateModal && (
+                <div
+                    style={modalOverlayStyle}
+                    onClick={closeCreateModal}
+                >
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Add Member"
+                        style={modalStyle}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="panel-title mb-4">
+                            <h4 className="mb-0">
+                                <FaUserPlus className="me-2" />
+                                Add New Member
+                            </h4>
+                        </div>
+
+                        <form onSubmit={saveMember}>
+                            <div className="mb-3">
+                                <label className="form-label">First Name</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="First Name"
+                                    name="firstName"
+                                    value={form.firstName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Last Name</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Last Name"
+                                    name="lastName"
+                                    value={form.lastName}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Gender</label>
+                                <select
+                                    className="form-select"
+                                    name="gender"
+                                    value={form.gender}
+                                    onChange={handleChange}
+                                    required
+                                >
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Birth Date</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    name="birthDate"
+                                    value={form.birthDate}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="09XXXXXXXXX"
+                                    name="phone"
+                                    value={form.phone}
+                                    onChange={handleChange}
+                                    maxLength="11"
+                                    pattern="09[0-9]{9}"
+                                    title="Phone number must contain exactly 11 digits and start with 09."
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Email Address</label>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    placeholder="Email Address"
+                                    name="email"
+                                    value={form.email}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="form-label">Complete Address</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    placeholder="Complete Address"
+                                    name="address"
+                                    value={form.address}
+                                    onChange={handleChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="d-flex justify-content-end gap-2 border-top pt-3">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={closeCreateModal}
+                                >
+                                    Close
+                                </button>
+
+                                <button type="submit" className="btn btn-dark">
+                                    <FaUserPlus className="me-2" />
+                                    Add Member
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+
+            {/* MEMBERS TABLE */}
+            <div className="dashboard-panel">
+                <div className="panel-title d-flex justify-content-between align-items-center flex-wrap gap-3">
+                    <span>
+                        <FaUsers className="me-2" />
+                        Registered Members
+                    </span>
+
+                    <div style={{ width: "100%", maxWidth: "320px" }}>
+                        <div className="input-group">
+                            <span className="input-group-text">
+                                <FaSearch />
+                            </span>
+
+                            <input
+                                className="form-control"
+                                placeholder="Search member..."
+                                value={search}
+                                onChange={(e) => setSearch(e.target.value)}
+                            />
+                        </div>
+                    </div>
+                </div>
+
+                <div className="table-responsive">
+                    <table className="table align-middle">
+                        <thead>
+                            <tr>
+                                <th>ID</th>
+                                <th>Full Name</th>
+                                <th>Gender</th>
+                                <th>Email</th>
+                                <th>Phone</th>
+                                <th>Address</th>
+                                <th>Status</th>
+                                <th style={{ width: "140px" }}>Action</th>
+                            </tr>
+                        </thead>
+
+                        <tbody>
+                            {filteredMembers.length === 0 ? (
+                                <tr>
+                                    <td colSpan="8" className="text-center py-4">
+                                        No members found.
+                                    </td>
+                                </tr>
+                            ) : (
+                                filteredMembers.map((member) => (
+                                    <tr key={member.memberID}>
+                                        <td>{member.memberID}</td>
+
+                                        <td>
+                                            <strong>
+                                                {member.firstName} {member.lastName}
+                                            </strong>
+                                        </td>
+
+                                        <td>{member.gender}</td>
+                                        <td>{member.email}</td>
+                                        <td>{member.phone}</td>
+
+                                        <td style={{ maxWidth: "250px", whiteSpace: "normal" }}>
+                                            {member.address}
+                                        </td>
+
+                                        <td>
+                                            <span
+                                                className={`badge ${
+                                                    String(member.status).toLowerCase() === "active"
+                                                        ? "bg-success"
+                                                        : "bg-secondary"
+                                                }`}
+                                            >
+                                                {member.status}
+                                            </span>
+                                        </td>
+
+                                        <td>
+                                            <button
+                                                type="button"
+                                                className="btn btn-warning btn-sm me-2"
+                                                onClick={() => editMember(member)}
+                                                title="Edit Member"
+                                            >
+                                                <FaEdit />
+                                            </button>
+
+                                            {role === "Admin" && (
+                                                <button
+                                                    type="button"
+                                                    className="btn btn-danger btn-sm"
+                                                    onClick={() => deleteMember(member.memberID)}
+                                                    title="Delete Member"
+                                                >
+                                                    <FaTrash />
+                                                </button>
+                                            )}
+                                        </td>
+                                    </tr>
+                                ))
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            {/* EDIT MEMBER MODAL */}
+            {editingId !== null && (
+                <div
+                    style={modalOverlayStyle}
+                    onClick={cancelEdit}
+                >
+                    <div
+                        role="dialog"
+                        aria-modal="true"
+                        aria-label="Edit Member"
+                        style={modalStyle}
+                        onClick={(e) => e.stopPropagation()}
+                    >
+                        <div className="panel-title mb-4">
+                            <h4 className="mb-0">
+                                <FaEdit className="me-2" />
+                                Edit Member
+                            </h4>
+                        </div>
+
+                        <form onSubmit={updateMember}>
+                            <div className="mb-3">
+                                <label className="form-label">First Name</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    name="firstName"
+                                    value={editForm.firstName}
+                                    onChange={handleEditChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Last Name</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    name="lastName"
+                                    value={editForm.lastName}
+                                    onChange={handleEditChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Gender</label>
+                                <select
+                                    className="form-select"
+                                    name="gender"
+                                    value={editForm.gender}
+                                    onChange={handleEditChange}
+                                    required
+                                >
+                                    <option value="">Select Gender</option>
+                                    <option value="Male">Male</option>
+                                    <option value="Female">Female</option>
+                                </select>
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Birth Date</label>
+                                <input
+                                    type="date"
+                                    className="form-control"
+                                    name="birthDate"
+                                    value={editForm.birthDate}
+                                    onChange={handleEditChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Phone Number</label>
+                                <input
+                                    type="tel"
+                                    className="form-control"
+                                    placeholder="09XXXXXXXXX"
+                                    name="phone"
+                                    value={editForm.phone}
+                                    onChange={handleEditChange}
+                                    maxLength="11"
+                                    pattern="09[0-9]{9}"
+                                    title="Phone number must contain exactly 11 digits and start with 09."
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-3">
+                                <label className="form-label">Email Address</label>
+                                <input
+                                    type="email"
+                                    className="form-control"
+                                    name="email"
+                                    value={editForm.email}
+                                    onChange={handleEditChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="mb-4">
+                                <label className="form-label">Complete Address</label>
+                                <input
+                                    type="text"
+                                    className="form-control"
+                                    name="address"
+                                    value={editForm.address}
+                                    onChange={handleEditChange}
+                                    required
+                                />
+                            </div>
+
+                            <div className="d-flex justify-content-end gap-2 border-top pt-3">
+                                <button
+                                    type="button"
+                                    className="btn btn-secondary"
+                                    onClick={cancelEdit}
+                                >
+                                    Close
+                                </button>
+
+                                <button type="submit" className="btn btn-dark">
+                                    <FaEdit className="me-2" />
+                                    Update Member
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            )}
+        </DashboardLayout>
+    );
 }
