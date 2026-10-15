@@ -401,15 +401,24 @@ export default function Members() {
                                         </td>
 
                                         <td>
-                                            <span
-                                                className={`badge ${
-                                                    String(member.status).toLowerCase() === "active"
-                                                        ? "bg-success"
-                                                        : "bg-secondary"
-                                                }`}
-                                            >
-                                                {member.status}
-                                            </span>
+                                            
+<span
+    className={`badge ${
+        item.status?.toLowerCase() === "active"
+            ? "bg-success"
+            : "bg-danger"
+    }`}
+    style={{
+        padding: "5px 10px",
+        borderRadius: "6px",
+        fontSize: "12px",
+        fontWeight: 600,
+        color: "#fff",
+    }}
+>
+    {item.status}
+</span>
+
                                         </td>
 
                                         <td>

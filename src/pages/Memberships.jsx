@@ -568,14 +568,21 @@ export default function Memberships() {
 
                                             <td>
                                                 <span
-                                                    className={
-                                                        item.status === "Active"
-                                                            ? "status-active"
-                                                            : "status-expired"
-                                                    }
-                                                >
-                                                    {item.status}
-                                                </span>
+    className={`badge ${
+        item.status?.toLowerCase() === "active"
+            ? "bg-success"
+            : "bg-danger"
+    }`}
+    style={{
+        padding: "5px 10px",
+        borderRadius: "6px",
+        fontSize: "12px",
+        fontWeight: 600,
+        color: "#fff",
+    }}
+>
+    {item.status}
+</span>
                                             </td>
 
                                             <td>
