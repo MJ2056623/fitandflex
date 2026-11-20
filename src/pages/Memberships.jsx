@@ -451,29 +451,29 @@ export default function Memberships() {
                                 />
 
                                 <div
-                                    style={{
-                                        display: "flex",
-                                        gap: "10px",
-                                        justifyContent: "flex-end",
-                                        flexWrap: "wrap",
-                                        marginTop: "28px",
-                                    }}
-                                >
-                                    <button
-                                        type="submit"
-                                        className="btn btn-dark"
-                                    >
-                                        Create Membership
-                                    </button>
+    style={{
+        display: "flex",
+        gap: "10px",
+        justifyContent: "flex-end",
+        flexWrap: "wrap",
+        marginTop: "28px",
+    }}
+>
+    <button
+        type="submit"
+        className="btn btn-dark"
+    >
+        Create Membership
+    </button>
 
-                                    <button
-                                        type="button"
-                                        className="btn btn-secondary"
-                                        onClick={closeCreateModal}
-                                    >
-                                        Close
-                                    </button>
-                                </div>
+    <button
+        type="button"
+        className="btn btn-danger"
+        onClick={closeCreateModal}
+    >
+        Close
+    </button>
+</div>
                             </form>
                         </div>
                     </div>
