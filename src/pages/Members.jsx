@@ -317,19 +317,19 @@ export default function Members() {
                             </div>
 
                             <div className="d-flex justify-content-end gap-2 border-top pt-3">
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={closeCreateModal}
-                                >
-                                    Close
-                                </button>
+    <button type="submit" className="btn btn-dark">
+        <FaUserPlus className="me-2" />
+        Add Member
+    </button>
 
-                                <button type="submit" className="btn btn-dark">
-                                    <FaUserPlus className="me-2" />
-                                    Add Member
-                                </button>
-                            </div>
+    <button
+        type="button"
+        className="btn btn-danger"
+        onClick={closeCreateModal}
+    >
+        Close
+    </button>
+</div>
                         </form>
                     </div>
                 </div>
@@ -561,19 +561,19 @@ export default function Members() {
                             </div>
 
                             <div className="d-flex justify-content-end gap-2 border-top pt-3">
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={cancelEdit}
-                                >
-                                    Close
-                                </button>
+    <button type="submit" className="btn btn-dark">
+        <FaEdit className="me-2" />
+        Update Member
+    </button>
 
-                                <button type="submit" className="btn btn-dark">
-                                    <FaEdit className="me-2" />
-                                    Update Member
-                                </button>
-                            </div>
+    <button
+        type="button"
+        className="btn btn-danger"
+        onClick={cancelEdit}
+    >
+        Close
+    </button>
+</div>
                         </form>
                     </div>
                 </div>
