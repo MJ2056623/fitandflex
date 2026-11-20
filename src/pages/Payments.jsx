@@ -643,8 +643,8 @@ export default function Payments() {
 
     <button
         type="button"
-        className="btn btn-danger"
-        onClick={onClose}
+    className="btn btn-danger"
+    onClick={onClose}
     >
         Close
     </button>

@@ -687,8 +687,8 @@ export default function Memberships() {
 
     <button
         type="button"
-        className="btn btn-danger"
-        onClick={onClose}
+    className="btn btn-danger"
+    onClick={onClose}
     >
         Close
     </button>
