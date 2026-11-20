@@ -3,7 +3,7 @@ import { useEffect, useState } from "react";
 import { useSearchParams } from "react-router-dom";
 import DashboardLayout from "../layouts/DashboardLayout";
 import api from "../api/api";
-import { FaEdit, FaTrash, FaRedoAlt, FaPlus } from "react-icons/fa";
+import { FaEdit, FaTrash, FaRedoAlt } from "react-icons/fa";
 
 const emptyMembership = {
     memberID: "",
@@ -13,7 +13,7 @@ const emptyMembership = {
     status: "Active",
 };
 
-const overlayStyle = {
+const modalOverlayStyle = {
     position: "fixed",
     inset: 0,
     backgroundColor: "rgba(0, 0, 0, 0.55)",
@@ -31,92 +31,13 @@ const modalStyle = {
     maxHeight: "90vh",
     overflowY: "auto",
     backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "28px",
-    boxShadow: "0 12px 40px rgba(0, 0, 0, 0.2)",
+    borderRadius: "16px",
+    boxShadow: "0 20px 50px rgba(0, 0, 0, 0.2)",
 };
 
-function MembershipFields({ values, onChange, members, plans, isEditing = false }) {
-    return (
-        <>
-            <div className="mb-3">
-                <label className="form-label">Member</label>
-                <select
-                    className="form-select"
-                    name="memberID"
-                    value={values.memberID}
-                    onChange={onChange}
-                    required
-                >
-                    <option value="">Select Member</option>
-                    {members.map((member) => (
-                        <option key={member.memberID} value={member.memberID}>
-                            {member.firstName} {member.lastName}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            <div className="mb-3">
-                <label className="form-label">Membership Plan</label>
-                <select
-                    className="form-select"
-                    name="planID"
-                    value={values.planID}
-                    onChange={onChange}
-                    required
-                >
-                    <option value="">Select Membership Plan</option>
-                    {plans.map((plan) => (
-                        <option key={plan.planID} value={plan.planID}>
-                            {plan.planName}
-                        </option>
-                    ))}
-                </select>
-            </div>
-
-            {isEditing && (
-                <>
-                    <div className="mb-3">
-                        <label className="form-label">Start Date</label>
-                        <input
-                            type="date"
-                            className="form-control"
-                            name="startDate"
-                            value={values.startDate}
-                            onChange={onChange}
-                        />
-                    </div>
-
-                    <div className="mb-3">
-                        <label className="form-label">End Date</label>
-                        <input
-                            type="date"
-                            className="form-control"
-                            name="endDate"
-                            min={values.startDate || undefined}
-                            value={values.endDate}
-                            onChange={onChange}
-                        />
-                    </div>
-
-                    <div className="mb-4">
-                        <label className="form-label">Status</label>
-                        <select
-                            className="form-select"
-                            name="status"
-                            value={values.status}
-                            onChange={onChange}
-                        >
-                            <option value="Active">Active</option>
-                            <option value="Expired">Expired</option>
-                        </select>
-                    </div>
-                </>
-            )}
-        </>
-    );
-}
+const fieldStyle = {
+    marginBottom: "20px",
+};
 
 export default function Memberships() {
     const role = localStorage.getItem("role");
@@ -139,11 +60,12 @@ export default function Memberships() {
 
     async function loadData() {
         try {
-            const [membershipRes, memberRes, planRes] = await Promise.all([
-                api.get("/Memberships"),
-                api.get("/Members"),
-                api.get("/MembershipPlans"),
-            ]);
+            const [membershipRes, memberRes, planRes] =
+                await Promise.all([
+                    api.get("/Memberships"),
+                    api.get("/Members"),
+                    api.get("/MembershipPlans"),
+                ]);
 
             setMemberships(membershipRes.data);
             setMembers(memberRes.data);
@@ -154,6 +76,22 @@ export default function Memberships() {
         }
     }
 
+    function handleChange(e) {
+        const { name, value } = e.target;
+        setForm((previous) => ({
+            ...previous,
+            [name]: value,
+        }));
+    }
+
+    function handleEditChange(e) {
+        const { name, value } = e.target;
+        setEditForm((previous) => ({
+            ...previous,
+            [name]: value,
+        }));
+    }
+
     function closeCreateModal() {
         setShowCreateModal(false);
         setForm({ ...emptyMembership });
@@ -162,16 +100,6 @@ export default function Memberships() {
     function cancelEdit() {
         setEditingId(null);
         setEditForm({ ...emptyMembership });
-    }
-
-    function handleChange(e) {
-        const { name, value } = e.target;
-        setForm((previous) => ({ ...previous, [name]: value }));
-    }
-
-    function handleEditChange(e) {
-        const { name, value } = e.target;
-        setEditForm((previous) => ({ ...previous, [name]: value }));
     }
 
     const filteredMemberships = memberships.filter((membership) => {
@@ -198,8 +126,10 @@ export default function Memberships() {
             };
 
             await api.post("/Memberships", payload);
+
             closeCreateModal();
             await loadData();
+
             alert("Membership created successfully.");
         } catch (err) {
             console.error(err);
@@ -220,10 +150,18 @@ export default function Memberships() {
         setEditingId(item.membershipID);
 
         setEditForm({
-            memberID: item.memberID ?? item.member?.memberID ?? "",
-            planID: item.planID ?? item.membershipPlan?.planID ?? "",
-            startDate: item.startDate ? item.startDate.substring(0, 10) : "",
-            endDate: item.endDate ? item.endDate.substring(0, 10) : "",
+            memberID:
+                item.memberID ?? item.member?.memberID ?? "",
+            planID:
+                item.planID ??
+                item.membershipPlan?.planID ??
+                "",
+            startDate: item.startDate
+                ? item.startDate.substring(0, 10)
+                : "",
+            endDate: item.endDate
+                ? item.endDate.substring(0, 10)
+                : "",
             status: item.status || "Active",
         });
     }
@@ -255,8 +193,10 @@ export default function Memberships() {
             };
 
             await api.put(`/Memberships/${editingId}`, payload);
+
             cancelEdit();
             await loadData();
+
             alert("Membership updated successfully.");
         } catch (err) {
             console.error(err);
@@ -297,6 +237,7 @@ export default function Memberships() {
 
         try {
             await api.put(`/Memberships/renew/${id}`);
+
             await loadData();
             alert("Membership renewed successfully.");
         } catch (err) {
@@ -316,11 +257,15 @@ export default function Memberships() {
 
     function formatDate(date) {
         if (!date) return "-";
+
         return new Date(date).toLocaleDateString();
     }
 
     function getRemainingText(item) {
-        if (item.remainingDays === null || item.remainingDays === undefined) {
+        if (
+            item.remainingDays === null ||
+            item.remainingDays === undefined
+        ) {
             return "-";
         }
 
@@ -337,7 +282,10 @@ export default function Memberships() {
     function getMemberName(item) {
         const member =
             item.member ||
-            members.find((m) => Number(m.memberID) === Number(item.memberID));
+            members.find(
+                (m) =>
+                    Number(m.memberID) === Number(item.memberID)
+            );
 
         return member
             ? `${member.firstName} ${member.lastName}`
@@ -347,15 +295,117 @@ export default function Memberships() {
     function getPlanName(item) {
         const plan =
             item.membershipPlan ||
-            plans.find((p) => Number(p.planID) === Number(item.planID));
+            plans.find(
+                (p) => Number(p.planID) === Number(item.planID)
+            );
 
         return plan?.planName || "Unknown Plan";
+    }
+
+    function MembershipFields({ values, onChange, isEditing = false }) {
+        return (
+            <>
+                <div style={fieldStyle}>
+                    <label className="form-label">Member</label>
+                    <select
+                        className="form-select"
+                        name="memberID"
+                        value={values.memberID}
+                        onChange={onChange}
+                        required
+                    >
+                        <option value="">Select Member</option>
+                        {members.map((member) => (
+                            <option
+                                key={member.memberID}
+                                value={member.memberID}
+                            >
+                                {member.firstName} {member.lastName}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                <div style={fieldStyle}>
+                    <label className="form-label">
+                        Membership Plan
+                    </label>
+                    <select
+                        className="form-select"
+                        name="planID"
+                        value={values.planID}
+                        onChange={onChange}
+                        required
+                    >
+                        <option value="">Select Membership Plan</option>
+                        {plans.map((plan) => (
+                            <option
+                                key={plan.planID}
+                                value={plan.planID}
+                            >
+                                {plan.planName}
+                            </option>
+                        ))}
+                    </select>
+                </div>
+
+                {isEditing && (
+                    <>
+                        <div style={fieldStyle}>
+                            <label className="form-label">Start Date</label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                name="startDate"
+                                value={values.startDate}
+                                onChange={onChange}
+                            />
+                        </div>
+
+                        <div style={fieldStyle}>
+                            <label className="form-label">End Date</label>
+                            <input
+                                type="date"
+                                className="form-control"
+                                name="endDate"
+                                min={values.startDate || undefined}
+                                value={values.endDate}
+                                onChange={onChange}
+                            />
+                        </div>
+
+                        <div style={fieldStyle}>
+                            <label className="form-label">Status</label>
+                            <select
+                                className="form-select"
+                                name="status"
+                                value={values.status}
+                                onChange={onChange}
+                            >
+                                <option value="Active">Active</option>
+                                <option value="Expired">Expired</option>
+                            </select>
+                        </div>
+                    </>
+                )}
+            </>
+        );
     }
 
     return (
         <DashboardLayout>
             {/* PAGE HEADER */}
-            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+            <div
+                className="page-header"
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    gap: "16px",
+                    flexWrap: "wrap",
+                    marginBottom: "24px",
+                }}
+            >
                 <div>
                     <h1>Memberships</h1>
                     <p>Manage member subscriptions and renewals.</p>
@@ -366,14 +416,16 @@ export default function Memberships() {
                     className="btn btn-dark"
                     onClick={() => setShowCreateModal(true)}
                 >
-                    <FaPlus className="me-2" />
-                    Create Membership
+                    + Create Membership
                 </button>
             </div>
 
             {/* CREATE MEMBERSHIP MODAL */}
             {showCreateModal && (
-                <div style={overlayStyle} onClick={closeCreateModal}>
+                <div
+                    style={modalOverlayStyle}
+                    onClick={closeCreateModal}
+                >
                     <div
                         role="dialog"
                         aria-modal="true"
@@ -381,45 +433,65 @@ export default function Memberships() {
                         style={modalStyle}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h4 className="mb-4">Create Membership</h4>
+                        <div style={{ padding: "32px" }}>
+                            <h4
+                                style={{
+                                    color: "#081C45",
+                                    fontWeight: 700,
+                                    marginBottom: "24px",
+                                }}
+                            >
+                                Create Membership
+                            </h4>
 
-                        <form onSubmit={saveMembership}>
-                            <MembershipFields
-                                values={form}
-                                onChange={handleChange}
-                                members={members}
-                                plans={plans}
-                            />
+                            <form onSubmit={saveMembership}>
+                                <MembershipFields
+                                    values={form}
+                                    onChange={handleChange}
+                                />
 
-                            <div className="d-flex justify-content-end gap-2 border-top pt-3">
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={closeCreateModal}
+                                <div
+                                    style={{
+                                        display: "flex",
+                                        gap: "10px",
+                                        justifyContent: "flex-end",
+                                        flexWrap: "wrap",
+                                        marginTop: "28px",
+                                    }}
                                 >
-                                    Close
-                                </button>
+                                    <button
+                                        type="submit"
+                                        className="btn btn-dark"
+                                    >
+                                        Create Membership
+                                    </button>
 
-                                <button type="submit" className="btn btn-dark">
-                                    <FaPlus className="me-2" />
-                                    Create Membership
-                                </button>
-                            </div>
-                        </form>
+                                    <button
+                                        type="button"
+                                        className="btn btn-secondary"
+                                        onClick={closeCreateModal}
+                                    >
+                                        Close
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}
 
-            {/* MEMBERSHIP TABLE */}
-            <div className="dashboard-panel">
-                <div className="panel-title">
-                    {statusFilter
-                        ? `${statusFilter} Memberships`
-                        : "Membership List"}
+            {/* MEMBERSHIP LIST */}
+            <div className="page-card">
+                <div className="card-header-custom">
+                    <h4>
+                        {statusFilter
+                            ? `${statusFilter} Memberships`
+                            : "Membership List"}
+                    </h4>
                 </div>
 
                 <div className="table-responsive">
-                    <table className="table align-middle">
+                    <table className="table custom-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -429,14 +501,16 @@ export default function Memberships() {
                                 <th>End Date</th>
                                 <th>Remaining</th>
                                 <th>Status</th>
-                                <th style={{ minWidth: "150px" }}>Actions</th>
+                                <th style={{ minWidth: "150px" }}>
+                                    Actions
+                                </th>
                             </tr>
                         </thead>
 
                         <tbody>
                             {filteredMemberships.length === 0 ? (
                                 <tr>
-                                    <td colSpan="8" className="text-center py-4">
+                                    <td colSpan="8" className="text-center">
                                         {statusFilter
                                             ? `No ${statusFilter} memberships found.`
                                             : "No memberships found."}
@@ -469,38 +543,65 @@ export default function Memberships() {
                                             }
                                         >
                                             <td>#{item.membershipID}</td>
+
                                             <td>{getMemberName(item)}</td>
+
                                             <td>
                                                 <strong>{planName}</strong>
                                                 {!isWalkIn &&
                                                     remainingDays !== null &&
                                                     remainingDays > 0 && (
-                                                        <div className="small text-muted">
+                                                        <div
+                                                            style={{
+                                                                fontSize: "12px",
+                                                                color: "#777",
+                                                            }}
+                                                        >
                                                             {remainingDays} day(s) left
                                                         </div>
                                                     )}
                                             </td>
+
                                             <td>{formatDate(item.startDate)}</td>
                                             <td>{formatDate(item.endDate)}</td>
                                             <td>{getRemainingText(item)}</td>
+
                                             <td>
                                                 <span
-                                                    className={`badge ${
-                                                        item.status?.toLowerCase() === "active"
-                                                            ? "bg-success"
-                                                            : "bg-danger"
-                                                    }`}
-                                                >
-                                                    {item.status}
-                                                </span>
+    className={`badge ${
+        item.status?.toLowerCase() === "active"
+            ? "bg-success"
+            : "bg-danger"
+    }`}
+    style={{
+        padding: "5px 10px",
+        borderRadius: "6px",
+        fontSize: "12px",
+        fontWeight: 600,
+        color: "#fff",
+    }}
+>
+    {item.status}
+</span>
                                             </td>
+
                                             <td>
-                                                <div className="d-flex gap-2 flex-wrap">
+                                                <div
+                                                    style={{
+                                                        display: "flex",
+                                                        gap: "8px",
+                                                        alignItems: "center",
+                                                        flexWrap: "wrap",
+                                                    }}
+                                                >
                                                     <button
                                                         type="button"
                                                         className="btn btn-warning btn-sm"
                                                         title="Edit Membership"
-                                                        onClick={() => editMembership(item)}
+                                                        aria-label="Edit Membership"
+                                                        onClick={() =>
+                                                            editMembership(item)
+                                                        }
                                                     >
                                                         <FaEdit />
                                                     </button>
@@ -510,8 +611,11 @@ export default function Memberships() {
                                                             type="button"
                                                             className="btn btn-success btn-sm"
                                                             title="Renew Membership"
+                                                            aria-label="Renew Membership"
                                                             onClick={() =>
-                                                                renewMembership(item.membershipID)
+                                                                renewMembership(
+                                                                    item.membershipID
+                                                                )
                                                             }
                                                         >
                                                             <FaRedoAlt />
@@ -523,8 +627,11 @@ export default function Memberships() {
                                                             type="button"
                                                             className="btn btn-danger btn-sm"
                                                             title="Delete Membership"
+                                                            aria-label="Delete Membership"
                                                             onClick={() =>
-                                                                deleteMembership(item.membershipID)
+                                                                deleteMembership(
+                                                                    item.membershipID
+                                                                )
                                                             }
                                                         >
                                                             <FaTrash />
@@ -543,7 +650,10 @@ export default function Memberships() {
 
             {/* EDIT MEMBERSHIP MODAL */}
             {editingId !== null && (
-                <div style={overlayStyle} onClick={cancelEdit}>
+                <div
+                    style={modalOverlayStyle}
+                    onClick={cancelEdit}
+                >
                     <div
                         role="dialog"
                         aria-modal="true"
@@ -551,35 +661,40 @@ export default function Memberships() {
                         style={modalStyle}
                         onClick={(e) => e.stopPropagation()}
                     >
-                        <h4 className="mb-4">
-                            <FaEdit className="me-2" />
-                            Edit Membership
-                        </h4>
+                        <div style={{ padding: "32px" }}>
+                            <h4
+                                style={{
+                                    color: "#081C45",
+                                    fontWeight: 700,
+                                    marginBottom: "24px",
+                                }}
+                            >
+                                <FaEdit style={{ marginRight: "10px" }} />
+                                Edit Membership
+                            </h4>
 
-                        <form onSubmit={updateMembership}>
-                            <MembershipFields
-                                values={editForm}
-                                onChange={handleEditChange}
-                                members={members}
-                                plans={plans}
-                                isEditing
-                            />
+                            <form onSubmit={updateMembership}>
+                                <MembershipFields
+                                    values={editForm}
+                                    onChange={handleEditChange}
+                                    isEditing
+                                />
 
-                            <div className="d-flex justify-content-end gap-2 border-top pt-3">
-                                <button
-                                    type="button"
-                                    className="btn btn-secondary"
-                                    onClick={cancelEdit}
-                                >
-                                    Close
-                                </button>
+                                <div className="d-flex justify-content-end gap-2 mt-4">
+    <button type="submit" className="btn btn-dark">
+        {isEditing ? "Update" : "Add"}
+    </button>
 
-                                <button type="submit" className="btn btn-dark">
-                                    <FaEdit className="me-2" />
-                                    Update Membership
-                                </button>
-                            </div>
-                        </form>
+    <button
+        type="button"
+        className="btn btn-danger"
+        onClick={onClose}
+    >
+        Close
+    </button>
+</div>
+                            </form>
+                        </div>
                     </div>
                 </div>
             )}

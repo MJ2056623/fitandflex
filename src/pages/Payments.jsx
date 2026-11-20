@@ -34,9 +34,12 @@ const modalStyle = {
     maxHeight: "90vh",
     overflowY: "auto",
     backgroundColor: "#fff",
-    borderRadius: "12px",
-    padding: "28px",
-    boxShadow: "0 12px 40px rgba(0, 0, 0, 0.2)",
+    borderRadius: "16px",
+    boxShadow: "0 20px 50px rgba(0, 0, 0, 0.2)",
+};
+
+const fieldStyle = {
+    marginBottom: "20px",
 };
 
 function PaymentModal({ title, children, onClose }) {
@@ -45,12 +48,22 @@ function PaymentModal({ title, children, onClose }) {
             <div
                 role="dialog"
                 aria-modal="true"
-                aria-label="Payment Form"
+                aria-label={title}
                 style={modalStyle}
                 onClick={(event) => event.stopPropagation()}
             >
-                <h4 className="mb-4">{title}</h4>
-                {children}
+                <div style={{ padding: "32px" }}>
+                    <h4
+                        style={{
+                            color: "#081C45",
+                            fontWeight: 700,
+                            marginBottom: "24px",
+                        }}
+                    >
+                        {title}
+                    </h4>
+                    {children}
+                </div>
             </div>
         </div>
     );
@@ -77,13 +90,17 @@ export default function Payments() {
 
     async function loadData() {
         try {
-            const [paymentRes, memberRes, membershipRes, planRes] =
-                await Promise.all([
-                    api.get("/Payments"),
-                    api.get("/Members"),
-                    api.get("/Memberships"),
-                    api.get("/MembershipPlans"),
-                ]);
+            const [
+                paymentRes,
+                memberRes,
+                membershipRes,
+                planRes,
+            ] = await Promise.all([
+                api.get("/Payments"),
+                api.get("/Members"),
+                api.get("/Memberships"),
+                api.get("/MembershipPlans"),
+            ]);
 
             setPayments(paymentRes.data);
             setMembers(memberRes.data);
@@ -91,7 +108,8 @@ export default function Payments() {
 
             const availableMemberships = membershipRes.data.filter(
                 (membership) =>
-                    membership.status === "Active" && !membership.isPaid
+                    membership.status === "Active" &&
+                    !membership.isPaid
             );
 
             setMemberships(availableMemberships);
@@ -120,7 +138,8 @@ export default function Payments() {
             }
 
             const plan = plans.find(
-                (item) => Number(item.planID) === Number(membership.planID)
+                (item) =>
+                    Number(item.planID) === Number(membership.planID)
             );
 
             setForm((previous) => ({
@@ -177,6 +196,7 @@ export default function Payments() {
 
             closeCreateModal();
             await loadData();
+
             alert("Payment recorded successfully.");
         } catch (err) {
             console.error(err);
@@ -226,6 +246,7 @@ export default function Payments() {
 
             cancelEdit();
             await loadData();
+
             alert("Payment updated successfully.");
         } catch (err) {
             console.error(err);
@@ -255,7 +276,8 @@ export default function Payments() {
         const member =
             payment.member ||
             members.find(
-                (item) => Number(item.memberID) === Number(payment.memberID)
+                (item) =>
+                    Number(item.memberID) === Number(payment.memberID)
             );
 
         return member
@@ -265,11 +287,9 @@ export default function Payments() {
 
     function getMembershipName(payment) {
         if (payment.membership) {
-            return (
-                payment.membership.plan ||
+            return payment.membership.plan ||
                 payment.membership.membershipPlan?.planName ||
-                `#${payment.membership.membershipID}`
-            );
+                `#${payment.membership.membershipID}`;
         }
 
         return `#${payment.membershipID}`;
@@ -282,20 +302,20 @@ export default function Payments() {
             .includes(search.toLowerCase())
     );
 
-    const selectedMembership = memberships.find(
-        (item) => Number(item.membershipID) === Number(form.membershipID)
-    );
-
-    const selectedPlan =
-        selectedMembership?.membershipPlan ||
-        plans.find(
-            (plan) => Number(plan.planID) === Number(selectedMembership?.planID)
-        );
-
     return (
         <DashboardLayout>
             {/* PAGE HEADER */}
-            <div className="d-flex justify-content-between align-items-center flex-wrap gap-3 mb-4">
+            <div
+                className="page-header"
+                style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "16px",
+                    marginBottom: "24px",
+                }}
+            >
                 <div>
                     <h1>
                         <FaMoneyBillWave className="me-2" />
@@ -321,7 +341,7 @@ export default function Payments() {
                     onClose={closeCreateModal}
                 >
                     <form onSubmit={savePayment}>
-                        <div className="mb-3">
+                        <div style={fieldStyle}>
                             <label className="form-label">Member</label>
                             <select
                                 className="form-select"
@@ -361,18 +381,36 @@ export default function Payments() {
                             )}
                         </div>
 
-                        <div className="mb-3">
+                        <div style={fieldStyle}>
                             <label className="form-label">Membership</label>
                             <input
                                 type="text"
                                 className="form-control"
-                                value={selectedPlan?.planName || ""}
+                                value={
+                                    memberships.find(
+                                        (item) =>
+                                            Number(item.membershipID) ===
+                                            Number(form.membershipID)
+                                    )?.membershipPlan?.planName ||
+                                    plans.find(
+                                        (plan) =>
+                                            Number(plan.planID) ===
+                                            Number(
+                                                memberships.find(
+                                                    (item) =>
+                                                        Number(item.membershipID) ===
+                                                        Number(form.membershipID)
+                                                )?.planID
+                                            )
+                                    )?.planName ||
+                                    ""
+                                }
                                 readOnly
                                 placeholder="Select a member first"
                             />
                         </div>
 
-                        <div className="mb-4">
+                        <div style={fieldStyle}>
                             <label className="form-label">Amount (₱)</label>
                             <input
                                 type="number"
@@ -383,15 +421,15 @@ export default function Payments() {
                             />
                         </div>
 
-                        <div className="d-flex justify-content-end gap-2 border-top pt-3">
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={closeCreateModal}
-                            >
-                                Close
-                            </button>
-
+                        <div
+                            style={{
+                                display: "flex",
+                                justifyContent: "flex-end",
+                                gap: "10px",
+                                flexWrap: "wrap",
+                                marginTop: "28px",
+                            }}
+                        >
                             <button
                                 type="submit"
                                 className="btn btn-dark"
@@ -403,35 +441,50 @@ export default function Payments() {
                                 <FaPlus className="me-2" />
                                 Record Payment
                             </button>
+
+                            <button
+                                type="button"
+                                className="btn btn-secondary"
+                                onClick={closeCreateModal}
+                            >
+                                Close
+                            </button>
                         </div>
                     </form>
                 </PaymentModal>
             )}
 
             {/* PAYMENT HISTORY */}
-            <div className="dashboard-panel">
-                <div className="panel-title d-flex justify-content-between align-items-center flex-wrap gap-3">
-                    <span>Payment History</span>
+            <div className="page-card">
+                <div
+                    className="card-header-custom"
+                    style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "center",
+                        gap: "16px",
+                        flexWrap: "wrap",
+                    }}
+                >
+                    <h4>Payment History</h4>
 
-                    <div style={{ width: "100%", maxWidth: "320px" }}>
-                        <div className="input-group">
-                            <span className="input-group-text">
-                                <FaSearch />
-                            </span>
-
-                            <input
-                                type="text"
-                                className="form-control"
-                                placeholder="Search member..."
-                                value={search}
-                                onChange={(e) => setSearch(e.target.value)}
-                            />
-                        </div>
+                    <div
+                        className="search-box"
+                        style={{ minWidth: "220px", maxWidth: "320px" }}
+                    >
+                        <FaSearch className="search-icon" />
+                        <input
+                            type="text"
+                            className="form-control"
+                            placeholder="Search member..."
+                            value={search}
+                            onChange={(e) => setSearch(e.target.value)}
+                        />
                     </div>
                 </div>
 
                 <div className="table-responsive">
-                    <table className="table align-middle">
+                    <table className="table custom-table">
                         <thead>
                             <tr>
                                 <th>ID</th>
@@ -446,7 +499,10 @@ export default function Payments() {
                         <tbody>
                             {filteredPayments.length === 0 ? (
                                 <tr>
-                                    <td colSpan="6" className="text-center py-4">
+                                    <td
+                                        colSpan="6"
+                                        className="text-center py-5"
+                                    >
                                         No payments found.
                                     </td>
                                 </tr>
@@ -454,22 +510,24 @@ export default function Payments() {
                                 filteredPayments.map((payment) => (
                                     <tr key={payment.paymentID}>
                                         <td>
-                                            <strong>#{payment.paymentID}</strong>
+                                            <strong>
+                                                #{payment.paymentID}
+                                            </strong>
                                         </td>
 
                                         <td>{getMemberName(payment)}</td>
+
                                         <td>{getMembershipName(payment)}</td>
 
                                         <td>
                                             <strong>
                                                 ₱
-                                                {Number(payment.amount).toLocaleString(
-                                                    "en-PH",
-                                                    {
-                                                        minimumFractionDigits: 2,
-                                                        maximumFractionDigits: 2,
-                                                    }
-                                                )}
+                                                {Number(
+                                                    payment.amount
+                                                ).toLocaleString("en-PH", {
+                                                    minimumFractionDigits: 2,
+                                                    maximumFractionDigits: 2,
+                                                })}
                                             </strong>
                                         </td>
 
@@ -482,11 +540,18 @@ export default function Payments() {
                                         </td>
 
                                         <td>
-                                            <div className="d-flex gap-2 flex-wrap">
+                                            <div
+                                                style={{
+                                                    display: "flex",
+                                                    gap: "8px",
+                                                    flexWrap: "wrap",
+                                                }}
+                                            >
                                                 <button
                                                     type="button"
                                                     className="btn btn-warning btn-sm"
                                                     title="Edit Payment"
+                                                    aria-label="Edit Payment"
                                                     onClick={() =>
                                                         editPayment(payment)
                                                     }
@@ -499,6 +564,7 @@ export default function Payments() {
                                                         type="button"
                                                         className="btn btn-danger btn-sm"
                                                         title="Delete Payment"
+                                                        aria-label="Delete Payment"
                                                         onClick={() =>
                                                             deletePayment(
                                                                 payment.paymentID
@@ -530,7 +596,7 @@ export default function Payments() {
                     onClose={cancelEdit}
                 >
                     <form onSubmit={updatePayment}>
-                        <div className="mb-3">
+                        <div style={fieldStyle}>
                             <label className="form-label">Member</label>
                             <input
                                 type="text"
@@ -542,19 +608,21 @@ export default function Payments() {
                             />
                         </div>
 
-                        <div className="mb-3">
+                        <div style={fieldStyle}>
                             <label className="form-label">Membership</label>
                             <input
                                 type="text"
                                 className="form-control"
-                                value={getMembershipName({
-                                    membershipID: editForm.membershipID,
-                                })}
+                                value={
+                                    getMembershipName({
+                                        membershipID: editForm.membershipID,
+                                    })
+                                }
                                 readOnly
                             />
                         </div>
 
-                        <div className="mb-4">
+                        <div style={fieldStyle}>
                             <label className="form-label">Amount (₱)</label>
                             <input
                                 type="number"
@@ -568,20 +636,19 @@ export default function Payments() {
                             />
                         </div>
 
-                        <div className="d-flex justify-content-end gap-2 border-top pt-3">
-                            <button
-                                type="button"
-                                className="btn btn-secondary"
-                                onClick={cancelEdit}
-                            >
-                                Close
-                            </button>
+                        <div className="d-flex justify-content-end gap-2 mt-4">
+    <button type="submit" className="btn btn-dark">
+        {isEditing ? "Update" : "Add"}
+    </button>
 
-                            <button type="submit" className="btn btn-dark">
-                                <FaEdit className="me-2" />
-                                Update Payment
-                            </button>
-                        </div>
+    <button
+        type="button"
+        className="btn btn-danger"
+        onClick={onClose}
+    >
+        Close
+    </button>
+</div>
                     </form>
                 </PaymentModal>
             )}
