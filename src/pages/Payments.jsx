@@ -638,13 +638,13 @@ export default function Payments() {
 
                         <div className="d-flex justify-content-end gap-2 mt-4">
     <button type="submit" className="btn btn-dark">
-        {isEditing ? "Update" : "Add"}
+        Update
     </button>
 
     <button
         type="button"
-    className="btn btn-danger"
-    onClick={onClose}
+        className="btn btn-danger"
+        onClick={cancelEdit}
     >
         Close
     </button>
