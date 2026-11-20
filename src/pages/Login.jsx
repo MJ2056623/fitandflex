@@ -1,3 +1,4 @@
+
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import {
@@ -18,10 +19,15 @@ export default function Login() {
     const [password, setPassword] = useState("");
     const [error, setError] = useState("");
     const [showPassword, setShowPassword] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
 
     async function handleLogin(e) {
         e.preventDefault();
+
+        if (isLoading) return;
+
         setError("");
+        setIsLoading(true);
 
         try {
             const response = await api.post("/Auth/login", {
@@ -36,6 +42,8 @@ export default function Login() {
             navigate("/dashboard");
         } catch {
             setError("Invalid username or password.");
+        } finally {
+            setIsLoading(false);
         }
     }
 
@@ -82,33 +90,61 @@ export default function Login() {
                                 }
                                 autoComplete="username"
                                 required
+                                disabled={isLoading}
                             />
                         </div>
 
-                        {/* PASSWORD WITH SHOW/HIDE BUTTON */}
-                        
-<div className="input-group-custom password-group">
-    <FaLock />
-    <input
-        type={showPassword ? "text" : "password"}
-        placeholder="Password"
-        value={password}
-        onChange={(e) => setPassword(e.target.value)}
-        autoComplete="current-password"
-        required
-    />
-    <button
-        type="button"
-        className="password-toggle"
-        onClick={() => setShowPassword((prev) => !prev)}
-        aria-label={showPassword ? "Hide password" : "Show password"}
-    >
-        {showPassword ? <FaEyeSlash /> : <FaEye />}
-    </button>
-</div>
+                        {/* PASSWORD */}
+                        <div className="input-group-custom password-group">
+                            <FaLock />
 
-                        <button type="submit" className="login-btn">
-                            LOGIN
+                            <input
+                                type={showPassword ? "text" : "password"}
+                                placeholder="Password"
+                                value={password}
+                                onChange={(e) =>
+                                    setPassword(e.target.value)
+                                }
+                                autoComplete="current-password"
+                                required
+                                disabled={isLoading}
+                            />
+
+                            <button
+                                type="button"
+                                className="password-toggle"
+                                onClick={() =>
+                                    setShowPassword((prev) => !prev)
+                                }
+                                aria-label={
+                                    showPassword
+                                        ? "Hide password"
+                                        : "Show password"
+                                }
+                                disabled={isLoading}
+                            >
+                                {showPassword ? <FaEyeSlash /> : <FaEye />}
+                            </button>
+                        </div>
+
+                        {/* LOGIN BUTTON */}
+                        <button
+                            type="submit"
+                            className="login-btn"
+                            disabled={isLoading}
+                        >
+                            {isLoading ? (
+                                <>
+                                    <span
+                                        className="spinner-border spinner-border-sm me-2"
+                                        role="status"
+                                        aria-hidden="true"
+                                    ></span>
+                                    Logging in...
+                                </>
+                            ) : (
+                                "LOGIN"
+                            )}
                         </button>
 
                         <p className="mt-3 text-center">
